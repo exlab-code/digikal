@@ -221,6 +221,8 @@ class DirectusClient:
                 self.login()
                 response = self.session.post(url, headers=self.get_headers(), json=data)
 
+            if not response.ok:
+                logger.error(f"Failed to create item in {collection}: {response.status_code} {response.text}")
             response.raise_for_status()
             return response.json().get('data', {})
         except Exception as e:

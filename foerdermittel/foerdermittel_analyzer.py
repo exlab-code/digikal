@@ -486,7 +486,14 @@ RELEVANZ-KRITERIEN (is_relevant=false wenn):
             structured_data.scraped_data_id = program_data.get('id')
 
             # Convert to dict for Directus
-            return structured_data.model_dump()
+            data_dict = structured_data.model_dump()
+            
+            # Map field names from Pydantic model to Directus schema
+            if 'website' in data_dict:
+                data_dict['primary_url'] = data_dict['website']
+                del data_dict['website']
+            
+            return data_dict
 
         except Exception as e:
             logger.error(f"Error processing program {item_id_str}: {str(e)}")
