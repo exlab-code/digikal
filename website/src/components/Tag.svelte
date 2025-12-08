@@ -19,9 +19,10 @@
   class={classes}
   on:click={onClick}
   type="button"
+  title={tag}
 >
-  {tag}
+  <span class="tag-text">{tag}</span>
   {#if count !== null && count > 1}
-    <span class="tag-count ml-2 opacity-70">&nbsp;{count}</span>
+    <span class="tag-count">{count}</span>
   {/if}
 </button>

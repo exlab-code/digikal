@@ -236,31 +236,16 @@
 
     <!-- Right action bar -->
     <div class="border-l border-gray-100 px-4 py-4 flex flex-col justify-end text-sm w-32 action-bar">
-      <!-- Website or Application portal link -->
-      {#if program.website || program.application_portal}
-        <div>
-          {#if program.application_portal}
-            <a href={program.application_portal} target="_blank" rel="noopener noreferrer" class="w-full py-1 transition-colors hover:bg-gray-50 text-primary-600 flex items-center gap-2 mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="8.5" cy="7" r="4"></circle>
-                <line x1="20" y1="8" x2="20" y2="14"></line>
-                <line x1="23" y1="11" x2="17" y2="11"></line>
-              </svg>
-              Beantragen
-            </a>
-          {/if}
-          {#if program.website}
-            <a href={program.website} target="_blank" rel="noopener noreferrer" class="w-full py-1 transition-colors hover:bg-gray-50 text-primary-600 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-              </svg>
-              Info
-            </a>
-          {/if}
-        </div>
+      <!-- Primary URL link -->
+      {#if program.primary_url || program.website || program.source_url}
+        <a href={program.primary_url || program.website || program.source_url} target="_blank" rel="noopener noreferrer" class="w-full py-1 transition-colors hover:bg-gray-50 text-primary-600 flex items-center gap-2 whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          Website
+        </a>
       {/if}
     </div>
   </div>
