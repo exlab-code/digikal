@@ -39,9 +39,9 @@
       currentRoute = 'about';
     } else if (pathWithoutBase === '/linkedin-generator') {
       currentRoute = 'linkedin-generator';
-    } /* else if (pathWithoutBase === '/foerderprogramme') {
+    } else if (pathWithoutBase === '/foerderprogramme') {
       currentRoute = 'foerderprogramme';
-    } */ else {
+    } else {
       currentRoute = 'home';
     }
   }
@@ -74,8 +74,8 @@
     <About />
   {:else if currentRoute === 'linkedin-generator'}
     <LinkedInGenerator />
-  <!-- {:else if currentRoute === 'foerderprogramme'}
-    <Foerderprogramme /> -->
+  {:else if currentRoute === 'foerderprogramme'}
+    <Foerderprogramme />
   {/if}
 </div>
 

@@ -64,7 +64,7 @@
           </a>
         </li>
 
-        <!-- <li>
+        <li>
           <a
             href="/foerderprogramme"
             on:click|preventDefault={(e) => {
@@ -78,7 +78,7 @@
           >
             Förderprogramme
           </a>
-        </li> -->
+        </li>
 
         <!-- <li>
           <a
