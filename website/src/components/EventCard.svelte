@@ -68,24 +68,21 @@
       
       <!-- Event metadata -->
       <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
-        <!-- Time with end time -->
+        <!-- Time with end time (only if start_time exists) -->
+        {#if event.start_time}
         <div class="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
           <span>
-            {new Date(event.start_date).toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}
-            {#if event.end_date || event.end_time}
-              - 
-              {#if event.end_date}
-                {new Date(event.end_date).toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}
-              {:else if event.end_time}
-                {event.end_time}
-              {/if}
+            {event.start_time}
+            {#if event.end_time}
+              - {event.end_time}
             {/if}
           </span>
         </div>
+        {/if}
         
         <!-- Location or Online -->
         <div class="flex items-center gap-2">

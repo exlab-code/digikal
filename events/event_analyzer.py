@@ -13,7 +13,8 @@ import argparse
 import re
 import os
 import logging
-from datetime import datetime
+import time
+from datetime import datetime, date
 from openai import OpenAI
 from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List
@@ -179,7 +180,7 @@ class DirectusClient:
     def get_unprocessed_items(self, limit=10):
         """Get unprocessed items from scraped_data collection"""
         # Use Directus filter to get only unprocessed items directly
-        url = f"{self.base_url}/items/scraped_data?filter[processed][_eq]=false&limit={limit}"
+        url = f"{self.base_url}/items/scraped_data?filter[processed][_eq]=false&sort=-id&limit={limit}"
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
 
@@ -189,18 +190,32 @@ class DirectusClient:
         return items
     
     def update_item_status(self, item_id, success=True, processed_content=None):
-        """Update item status in Directus"""
+        """Update item status in Directus with retry and exponential backoff"""
         update_data = {
             "processed": True,
             "processed_at": datetime.now().isoformat(),
             "processing_status": "processed" if success else "failed"
         }
-        
+
         if processed_content:
             update_data["processed_content"] = processed_content
-        
+
         url = f"{self.base_url}/items/scraped_data/{item_id}"
-        response = requests.patch(url, headers=self.headers, json=update_data)
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            if attempt > 0:
+                delay = 2 ** attempt  # 2s, 4s
+                print(f"  Retry {attempt}/{max_retries - 1} for item {item_id} (HTTP {response.status_code}), waiting {delay}s...")
+                time.sleep(delay)
+            response = requests.patch(url, headers=self.headers, json=update_data)
+            if response.status_code in (200, 204):
+                return
+            if response.status_code in (403, 429) or response.status_code >= 500:
+                continue
+            response.raise_for_status()
+
+        # Final attempt failed — raise so callers can handle it
         response.raise_for_status()
     
     def save_event(self, event_data):
@@ -228,7 +243,8 @@ class DirectusClient:
             if existing:
                 return False, "duplicate"
 
-        # Add the event
+        # Add the event (with delay to avoid rate limiting)
+        time.sleep(0.5)
         response = requests.post(f"{self.base_url}/items/events", headers=self.headers, json=event_data)
         
         if response.status_code in (200, 201, 204):
@@ -351,24 +367,51 @@ VALIDATED EXTRACTION:
                     logger.info(f"Using regex-extracted {key}: {value}")
                     # Don't print to console - only log to file
 
-            # If we have a start_date but no end_date, and we have an end_time,
-            # use the start_date as the end_date as well (for same-day events)
-            if ('start_date' in structured_data and structured_data['start_date'] and
-                ('end_date' not in structured_data or not structured_data['end_date']) and
-                'end_time' in structured_data and structured_data['end_time']):
-                
-                # Extract the date part from start_date
-                date_match = re.search(r'(\d{4}-\d{2}-\d{2})', structured_data['start_date'])
+            # Combine date + time into ISO datetime strings for Directus
+            # (Directus has no separate start_time/end_time fields)
+            start_date = structured_data.get('start_date', '')
+            start_time = structured_data.get('start_time')
+            end_date = structured_data.get('end_date')
+            end_time = structured_data.get('end_time')
+
+            # Merge start_time into start_date
+            if start_date:
+                date_match = re.search(r'(\d{4}-\d{2}-\d{2})', start_date)
                 if date_match:
                     date_part = date_match.group(1)
-                    
-                    # Use end_time to create end_date
-                    time_match = re.search(r'(\d{1,2}):(\d{2})', structured_data['end_time'])
-                    if time_match:
-                        hour, minute = time_match.groups()
-                        time_part = f"{hour.zfill(2)}:{minute}:00"
-                        
-                        structured_data['end_date'] = f"{date_part}T{time_part}"
+                    if start_time:
+                        time_match = re.search(r'(\d{1,2}):(\d{2})', start_time)
+                        if time_match:
+                            h, m = time_match.groups()
+                            structured_data['start_date'] = f"{date_part}T{h.zfill(2)}:{m}:00"
+                    else:
+                        # No time extracted — keep date-only so Directus stores T00:00:00
+                        structured_data['start_date'] = date_part
+
+            # Merge end_time into end_date (use start_date's date if end_date is missing)
+            if end_time:
+                time_match = re.search(r'(\d{1,2}):(\d{2})', end_time)
+                if time_match:
+                    h, m = time_match.groups()
+                    time_str = f"{h.zfill(2)}:{m}:00"
+                    if end_date:
+                        ed_match = re.search(r'(\d{4}-\d{2}-\d{2})', end_date)
+                        if ed_match:
+                            structured_data['end_date'] = f"{ed_match.group(1)}T{time_str}"
+                    elif start_date:
+                        # Same-day event: use start_date's date part
+                        sd_match = re.search(r'(\d{4}-\d{2}-\d{2})', start_date)
+                        if sd_match:
+                            structured_data['end_date'] = f"{sd_match.group(1)}T{time_str}"
+            elif end_date:
+                # end_date exists but no end_time — keep date-only
+                ed_match = re.search(r'(\d{4}-\d{2}-\d{2})', end_date)
+                if ed_match:
+                    structured_data['end_date'] = ed_match.group(1)
+
+            # Remove separate time fields (Directus doesn't have them)
+            structured_data.pop('start_time', None)
+            structured_data.pop('end_time', None)
 
             # Add metadata
             structured_data["source"] = content.get("source_name", event_data.get("source_name", "Unknown"))
@@ -569,7 +612,9 @@ def process_events(limit=10, batch_size=3):
     processed = 0
     duplicates = 0
     errors = 0
+    skipped_past = 0
     total_tokens = 0
+    today_str = date.today().isoformat()
     
     # OPTIMIZATION 4: Process in smaller batches for better memory usage
     for i in range(0, len(items), batch_size):
@@ -605,37 +650,48 @@ def process_events(limit=10, batch_size=3):
             item_id = result['item_id']
             structured_data = result['structured_data']
 
-            # Save all events to Directus, but mark them as pending approval
-            structured_data["approved"] = None  # Pending approval
-            
-            # Save to events collection
-            success, status = directus.save_event(structured_data)
-            
             # Format event information for console output
             title = structured_data.get('title', 'Unknown')
-            date = structured_data.get('start_date', 'No date')
-            if date and len(date) > 10:  # Truncate ISO date to just YYYY-MM-DD
-                date = date[:10]
-            
+            start_date = structured_data.get('start_date', 'No date')
+            date_display = start_date[:10] if start_date and len(start_date) > 10 else start_date
+
+            # Skip past events: mark as processed but don't save to events collection
+            if start_date and start_date[:10] < today_str:
+                skipped_past += 1
+                print(f"⏭ Skipped (past event): {title} | {date_display}")
+                try:
+                    directus.update_item_status(item_id, success=True)
+                except requests.exceptions.HTTPError as e:
+                    print(f"Warning: Could not update item {item_id} status in DB: {e}")
+                time.sleep(0.3)
+                continue
+
+            # Save all events to Directus, but mark them as pending approval
+            structured_data["approved"] = None  # Pending approval
+
+            # Save to events collection
+            success, status = directus.save_event(structured_data)
+
             relevancy_score = structured_data.get('relevancy_score', 0)
 
             # Print a single, well-formatted line for each event
             if success:
                 processed += 1
-                print(f"✓ {title} | {date} | Score: {relevancy_score}/100")
+                print(f"✓ {title} | {date_display} | Score: {relevancy_score}/100")
             elif status == "duplicate":
                 duplicates += 1
                 print(f"↺ Duplicate: {title}")
             else:
                 errors += 1
                 print(f"✗ Error: {title} - {status}")
-            
-            # Update item status
-            processed_content = json.dumps(structured_data, ensure_ascii=False)
+
+            # Update item status (no processed_content — Directus token lacks write permission to that field)
             try:
-                directus.update_item_status(item_id, success=True, processed_content=processed_content)
+                directus.update_item_status(item_id, success=True)
             except requests.exceptions.HTTPError as e:
                 print(f"Warning: Could not update item {item_id} status in DB: {e}")
+
+            time.sleep(0.3)
     
     # Calculate cost (approx. $0.15 per 1M tokens)
     cost = (total_tokens / 1_000_000) * 0.15
@@ -643,30 +699,102 @@ def process_events(limit=10, batch_size=3):
     # Print summary
     print("\nProcessing Summary:")
     print(f"Processed: {processed}")
+    print(f"Skipped (past): {skipped_past}")
     print(f"Duplicates: {duplicates}")
     print(f"Errors: {errors}")
     print(f"Total tokens: {total_tokens}")
     print(f"Estimated cost: ${cost:.4f}")
+
+def mark_old_items(before_date, dry_run=False):
+    """Bulk-mark old unprocessed scraped_data items as processed without LLM extraction.
+
+    Fetches all unprocessed items and filters locally by date_created (since the
+    Directus token may not permit filtering on system fields). Items created before
+    `before_date` are marked as processed so they stop cycling through the pipeline.
+    """
+    directus = DirectusClient(DIRECTUS_URL, DIRECTUS_TOKEN)
+
+    # Fetch all unprocessed items, paginated
+    all_items = []
+    page = 1
+    page_size = 100
+    while True:
+        url = (
+            f"{directus.base_url}/items/scraped_data"
+            f"?filter[processed][_eq]=false"
+            f"&sort=id"
+            f"&limit={page_size}"
+            f"&page={page}"
+        )
+        response = requests.get(url, headers=directus.headers)
+        response.raise_for_status()
+        batch = response.json().get("data", [])
+        if not batch:
+            break
+        all_items.extend(batch)
+        page += 1
+
+    # Filter locally by date_created
+    old_items = [
+        item for item in all_items
+        if (item.get("date_created") or "") < before_date
+    ]
+
+    print(f"Found {len(all_items)} total unprocessed items, {len(old_items)} created before {before_date}")
+
+    if dry_run:
+        print("Dry run — no changes made.")
+        return
+
+    marked = 0
+    failed = 0
+    for item in old_items:
+        item_id = item["id"]
+        try:
+            directus.update_item_status(item_id, success=True)
+            marked += 1
+            if marked % 25 == 0:
+                print(f"  Marked {marked}/{len(old_items)}...")
+        except requests.exceptions.HTTPError as e:
+            print(f"  Failed to mark item {item_id}: {e}")
+            failed += 1
+        time.sleep(0.3)  # Rate-limit-safe pacing
+
+    print(f"\nDone: marked {marked}, failed {failed}")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Process events with structured extraction using Instructor")
     parser.add_argument("--limit", "-l", type=int, default=10, help="Maximum number of items to process")
     parser.add_argument("--batch", "-b", type=int, default=3, help="Batch size for processing")
     parser.add_argument("--log-file", default="llm_extraction.log", help="Path to log file for LLM extraction results")
-    
+    parser.add_argument("--mark-old", nargs="?", const="auto", metavar="DATE",
+                        help="Bulk-mark old unprocessed items as processed (default: items older than 30 days). Accepts YYYY-MM-DD.")
+    parser.add_argument("--dry-run", action="store_true", help="Preview --mark-old without making changes")
+
     args = parser.parse_args()
-    
+
+    # Handle --mark-old mode
+    if args.mark_old is not None:
+        if args.mark_old == "auto":
+            from datetime import timedelta
+            before_date = (date.today() - timedelta(days=30)).isoformat()
+        else:
+            before_date = args.mark_old
+        mark_old_items(before_date, dry_run=args.dry_run)
+        return
+
     # Configure log file if specified
     if args.log_file != "llm_extraction.log":
         for handler in logger.handlers:
             if isinstance(handler, logging.FileHandler):
                 handler.close()
                 logger.removeHandler(handler)
-        
+
         file_handler = logging.FileHandler(args.log_file)
         file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
         logger.addHandler(file_handler)
-        
+
     logger.info(f"Starting event processing with limit={args.limit}, batch_size={args.batch}")
 
     # Process events

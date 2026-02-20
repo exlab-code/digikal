@@ -10,10 +10,11 @@
   $: {
     const parts = [];
     if ($filters.category) parts.push(`Kategorie "${getCategoryName($filters.category)}"`);
-    if ($filters.tag) parts.push(`Tag "${$filters.tag}"`);
+    if ($filters.tags && $filters.tags.length > 0) parts.push($filters.tags.join(', '));
+    if ($filters.timeHorizon && $filters.timeHorizon !== 'all') parts.push(`Zeitraum`);
 
     if (parts.length > 0) {
-      filterDescription = `Gefiltert nach ${parts.join(' und ')}`;
+      filterDescription = `Gefiltert nach: ${parts.join(' + ')}`;
     } else {
       filterDescription = '';
     }

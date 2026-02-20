@@ -104,8 +104,6 @@ function getDateRangeFromTimeHorizon(timeHorizon) {
 export const filteredEvents = derived(
   [events, filters],
   ([$events, $filters]) => {
-    console.log('[EventStore] Filtering', $events.length, 'events with filters:', $filters);
-
     return $events.filter(event => {
       // Skip events without a start date
       if (!event.start_date) return false;
@@ -115,8 +113,6 @@ export const filteredEvents = derived(
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const eventDate = new Date(event.start_date);
       const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-
-      console.log('[EventStore] Checking event:', event.title, 'Date:', event.start_date, 'Event day:', eventDay, 'Today:', today, 'Past?', eventDay < today);
 
       // Only filter out events that are on days BEFORE today
       if (eventDay < today) return false;
@@ -200,14 +196,7 @@ export async function loadEvents() {
       if (value.category) currentFilters.category = value.category;
     })();
 
-    console.log('[EventStore] Loading events with filters:', currentFilters);
     const eventData = await api.getEvents(currentFilters);
-    console.log('[EventStore] Loaded', eventData.length, 'events from API');
-    console.log('[EventStore] First 3 events:', eventData.slice(0, 3).map(e => ({
-      title: e.title,
-      start_date: e.start_date,
-      approved: e.approved
-    })));
     events.set(eventData);
   } catch (err) {
     console.error('Fehler beim Laden der Veranstaltungen:', err);
@@ -247,13 +236,13 @@ export async function loadCalendarUrls() {
   }
 }
 
-// Update filters and reload events
+// Update filters (filtering is done client-side via the derived store)
 export function updateFilters(newFilters) {
   // Remove category from newFilters if it exists (we're not using it anymore)
   if (newFilters.hasOwnProperty('category')) {
     delete newFilters.category;
   }
-  
+
   filters.update(f => {
     // If we're updating tags, remove the category filter
     if (newFilters.hasOwnProperty('tags')) {
@@ -261,8 +250,6 @@ export function updateFilters(newFilters) {
     }
     return { ...f, ...newFilters };
   });
-  
-  loadEvents();
 }
 
 // Initialize all data
