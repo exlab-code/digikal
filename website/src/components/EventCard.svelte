@@ -38,6 +38,18 @@
     return text.substring(0, cutoff > 0 ? cutoff : maxLength) + '...';
   }
   
+  // Extract time (HH:MM) from an ISO datetime string, returns null for date-only or midnight
+  function extractTime(dateString) {
+    if (!dateString || !dateString.includes('T')) return null;
+    const d = new Date(dateString);
+    const h = d.getHours(), m = d.getMinutes();
+    if (h === 0 && m === 0) return null; // date-only stored as T00:00:00
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+
+  $: startTime = extractTime(event.start_date);
+  $: endTime = extractTime(event.end_date);
+
   // Find the group ID for a tag
   function findTagGroup(tag) {
     if (!event.tag_groups) return null;
@@ -68,17 +80,17 @@
       
       <!-- Event metadata -->
       <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
-        <!-- Time with end time (only if start_time exists) -->
-        {#if event.start_time}
+        <!-- Time (only if a real time is present in start_date) -->
+        {#if startTime}
         <div class="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
           <span>
-            {event.start_time}
-            {#if event.end_time}
-              - {event.end_time}
+            {startTime}
+            {#if endTime}
+              - {endTime}
             {/if}
           </span>
         </div>
