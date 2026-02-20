@@ -64,22 +64,6 @@
           </a>
         </li>
 
-        <li>
-          <a
-            href="/foerderprogramme"
-            on:click|preventDefault={(e) => {
-              navigateTo('/foerderprogramme', e);
-              isMenuOpen = false;
-            }}
-            class="block md:inline-block px-2 py-2 md:py-1 text-gray-700 font-medium hover:text-primary-600 relative
-                  {currentRoute === 'foerderprogramme' ? 'text-primary-600' : ''}
-                  after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-primary-600 after:w-full
-                  {currentRoute === 'foerderprogramme' ? 'after:block' : 'after:hidden'}"
-          >
-            Förderprogramme
-          </a>
-        </li>
-
         <!-- <li>
           <a
             href="/about"
