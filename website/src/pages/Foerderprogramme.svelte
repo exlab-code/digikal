@@ -5,9 +5,13 @@
   import McpServerCard from '../components/McpServerCard.svelte';
   import FoerdermittelAbout from '../components/FoerdermittelAbout.svelte';
   import { initializeData } from '../stores/foerdermittelStore';
+  import { activeAccordionId } from '../stores/accordionStore';
 
   onMount(() => {
     initializeData();
+    if (window.innerWidth >= 768) {
+      activeAccordionId.set('filter');
+    }
   });
 </script>
 
