@@ -107,6 +107,95 @@ DIRECTUS_API_TOKEN=your-api-token-here
 DIRECTUS_COLLECTION=scraped_data
 ```
 
+## Event Sources
+
+The scraper is configured to collect events from the following sources (defined in `config/sources.json`):
+
+### Original Sources
+
+| Source | URL | Focus |
+|--------|-----|-------|
+| Stifter-helfen.de | hausdesstiftens.org | Non-profit webinars and training |
+| Deutsche Stiftung für Engagement und Ehrenamt | deutsche-stiftung-engagement-und-ehrenamt.de | Civic engagement events |
+| Aktion Zivilcourage Weiterbildungsforum | eveeno.com | Volunteer training courses |
+| Smart Services BW | smart-service-bw.de | Digital transformation events |
+| Bitkom Akademie | bitkom-akademie.de | Tech seminars (paginated, up to 20 pages) |
+| Open Transfer | opentransfer.de | Community sector events |
+| Skala Campus | skala-campus.org | Non-profit capacity building (paginated, up to 10 pages) |
+| Fraunhofer IAO | iao.fraunhofer.de | Innovation and digitalization |
+
+### Added February 2026
+
+| Source | URL | Focus | CSS Selector |
+|--------|-----|-------|--------------|
+| Stiftung Datenschutz | stiftungdatenschutz.org/ehrenamt/webinare | DSGVO/data protection webinars for Vereine | `.die-news-list-more-items` |
+| Wegweiser Bürgergesellschaft | buergergesellschaft.de/.../veranstaltungskalender | Aggregated civil society event calendar (Stiftung Mitarbeit) | `.tx_wwbgeventdatabase .row` |
+| Paritätischer Wohlfahrtsverband | der-paritaetische.de/veranstaltungen/ | Welfare association, social sector digitalization (TYPO3/sf_event_mgt) | `.liste-artikel-element` |
+| Initiative D21 | initiatived21.de/veranstaltungen | Digital society partnership, #D21talk series | `.grid__item` |
+| Deutscher Fundraising Verband | dfrv.de/veranstaltungen/ | Digital fundraising workshops, training, annual congress | `.events-table tbody tr` |
+
+### Investigated but Not Added (Require JavaScript Rendering)
+
+The following sources were researched but cannot be scraped with the current BeautifulSoup-based static HTML scraper. They would require adding Playwright or Selenium support:
+
+| Source | URL | Reason | Notes |
+|--------|-----|--------|-------|
+| D3 — so geht digital | so-geht-digital.de/events/ | WordPress + Elementor, JS-rendered | Events RSS feed exists at `/events/feed/` but is empty. Main RSS at `/feed/` contains blog posts only. No WP REST API for events. |
+| CorrelAid | correlaid.org/en/events | SvelteKit, client-side rendered | Event data is embedded as JSON inside a `<script>` tag in the page source. Could be extracted with a custom parser. |
+| betterplace academy | betterplace-academy.org | LearnWorlds platform, webinar-termine returns 404 | Alternative via Eventbrite organizer page (React-rendered). Eventbrite API could be used as alternative. |
+| Civic Coding | civic-coding.de/angebote/veranstaltungen | Government site returns empty response to curl | AI-for-common-good events (BMAS/BMFSFJ/BMUV initiative). May require specific headers or JS rendering. |
+
+### Other Potential Sources for Future Addition
+
+These sources were identified during research and could be added if their HTML structure is verified:
+
+- **Deutsche Stiftungsakademie** (stiftungsakademie.de/veranstaltungen) — Foundation management courses, paginated card layout
+- **Bundesverband Deutscher Stiftungen** (stiftungen.org/aktuelles/terminkalender.html) — Foundation sector calendar, annual Stiftungstag
+- **HIIG** (hiig.de/en/events/) — Monthly "Digitaler Salon", WordPress Events Manager (may support ICS export)
+- **Weizenbaum-Institut** (weizenbaum-institut.de/en/events/) — Annual conference on AI and society
+- **Akademie für Ehrenamtlichkeit** (ehrenamt.de/Seminare/502_...) — Volunteer coordination seminars (plain text format, no structured cards)
+- **AlgorithmWatch** (algorithmwatch.org/en/events/) — AI ethics, algorithmic accountability
+- **Digitaltag** (digitaltag.eu/veranstaltungen) — Annual action day in June with hundreds of events
+- **ZiviZ** (ziviz.de/veranstaltungen) — Civil society research events
+- **Körber-Stiftung** (koerber-stiftung.de/en/events/) — "Eingeloggt!" digital literacy week
+- **Bits & Bäume** (bits-und-baeume.org) — Sustainable digitalization conferences
+
+### Adding a New Source
+
+Each source in `config/sources.json` requires:
+
+```json
+{
+  "name": "Source Display Name",
+  "url": "https://example.com/events/",
+  "type": "html",
+  "event_selector": ".css-selector-for-event-items",
+  "link_selector": "a",
+  "full_page_selector": ".css-selector-for-detail-page-content"
+}
+```
+
+- **event_selector**: CSS selector that matches each individual event listing on the overview page
+- **link_selector**: CSS selector (relative to the event element) to find the link to the detail page
+- **full_page_selector**: CSS selector for the main content area on the event detail page
+
+Optional pagination for sources with multiple pages:
+```json
+{
+  "pagination": {
+    "type": "url-param",
+    "param_name": "page",
+    "start_index": 0,
+    "max_pages": 20
+  }
+}
+```
+
+To verify selectors for a new source, inspect the page HTML and test that:
+1. `document.querySelectorAll(event_selector)` returns the expected event elements
+2. Each event element contains a link matching `link_selector`
+3. The detail page has content matching `full_page_selector`
+
 ## Command Line Options
 
 ```

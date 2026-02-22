@@ -67,11 +67,11 @@ export const filteredFoerdermittel = derived(
         const query = $filters.searchQuery.toLowerCase().trim();
         const searchableText = [
           program.title,
-          program.short_description,
+          program.original_title,
           program.description,
           program.funding_organization,
-          program.target_group,
-          program.eligibility_criteria
+          program.eligibility_summary,
+          program.funding_amount_text
         ].filter(Boolean).join(' ').toLowerCase();
 
         if (!searchableText.includes(query)) {

@@ -3,6 +3,7 @@
   import Header from './components/Header.svelte';
   import Home from './pages/Home.svelte';
   import About from './pages/About.svelte';
+  import Foerderprogramme from './pages/Foerderprogramme.svelte';
   import LinkedInGenerator from './pages/LinkedInGenerator.svelte';
   import { trackPageView } from './services/analytics';
 
@@ -36,6 +37,8 @@
 
     if (pathWithoutBase === '/about') {
       currentRoute = 'about';
+    } else if (pathWithoutBase === '/foerderprogramme') {
+      currentRoute = 'foerderprogramme';
     } else if (pathWithoutBase === '/linkedin-generator') {
       currentRoute = 'linkedin-generator';
     } else {
@@ -69,6 +72,8 @@
     <Home />
   {:else if currentRoute === 'about'}
     <About />
+  {:else if currentRoute === 'foerderprogramme'}
+    <Foerderprogramme />
   {:else if currentRoute === 'linkedin-generator'}
     <LinkedInGenerator />
   {/if}

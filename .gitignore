@@ -3,6 +3,22 @@ data/
 logs/
 .cache/
 *.log
+*.db
+*.db-shm
+*.db-wal
+
+# Old foerdermittel experiments (kept locally, archived in archive/old-foerdermittel branch)
+foerdermittel/
+
+# Claude Code
+.claude/
+.mcp.json
+
+# Draft documents
+linkedin-post*.md
+
+# Credentials (any depth)
+**/directus.json
 
 # Environment variables and sensitive configuration
 .env

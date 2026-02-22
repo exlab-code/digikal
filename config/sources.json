@@ -75,6 +75,46 @@
       "event_selector": ".filterpage-results--item",
       "link_selector": "h3 a",
       "full_page_selector": ".wp-block-group alignfull .is-style-bubble .has-small-font-size .is-layout-constrained .wp-block-group-is-layout-constrained"
+    },
+    {
+      "name": "Stiftung Datenschutz",
+      "url": "https://stiftungdatenschutz.org/ehrenamt/webinare",
+      "type": "html",
+      "event_selector": ".die-news-list-more-items",
+      "link_selector": "a",
+      "full_page_selector": ".sds-news-detailview"
+    },
+    {
+      "name": "Wegweiser Bürgergesellschaft",
+      "url": "https://www.buergergesellschaft.de/mitteilen/nuetzliches/veranstaltungskalender",
+      "type": "html",
+      "event_selector": ".tx_wwbgeventdatabase .row",
+      "link_selector": "a",
+      "full_page_selector": ".tx_wwbgeventdatabase"
+    },
+    {
+      "name": "Paritätischer Wohlfahrtsverband",
+      "url": "https://www.der-paritaetische.de/veranstaltungen/",
+      "type": "html",
+      "event_selector": ".liste-artikel-element",
+      "link_selector": "a",
+      "full_page_selector": ".artikel"
+    },
+    {
+      "name": "Initiative D21",
+      "url": "https://initiatived21.de/veranstaltungen",
+      "type": "html",
+      "event_selector": ".grid__item",
+      "link_selector": ".list-teaser__headline",
+      "full_page_selector": ".page__content"
+    },
+    {
+      "name": "Deutscher Fundraising Verband",
+      "url": "https://www.dfrv.de/veranstaltungen/",
+      "type": "html",
+      "event_selector": ".events-table tbody tr",
+      "link_selector": "a",
+      "full_page_selector": ".post-body"
     }
   ]
 }
