@@ -4,18 +4,9 @@
   import FoerderprogrammFilter from '../components/FoerderprogrammFilter.svelte';
   import AboutSection from '../components/AboutSection.svelte';
   import { initializeData } from '../stores/foerdermittelStore';
-  import { activeAccordionId } from '../stores/accordionStore';
 
   onMount(() => {
-    // Initialize all data when component mounts
     initializeData();
-
-    // Set default open accordion on desktop
-    if (window.innerWidth >= 768) {
-      activeAccordionId.set('filter');
-    } else {
-      activeAccordionId.set(null);
-    }
   });
 </script>
 

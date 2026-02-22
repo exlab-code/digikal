@@ -1,33 +1,23 @@
 <script>
   import { slide } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
-  import { activeAccordionId, setActiveAccordion } from '../stores/accordionStore';
-  import { onMount } from 'svelte';
-  import { writable } from 'svelte/store';
-  
+
   // Props
   export let title = ""; // The header text
   export let defaultOpen = false; // Whether the accordion is open by default
   export let id = ""; // Optional ID for the accordion
   export let mobileOnly = false; // Add mobileOnly prop to fix unknown prop error
-  
+
   // Event dispatcher to notify parent when accordion state changes
   const dispatch = createEventDispatcher();
 
-  // Reactive declaration to compute if this accordion is open
-  $: isOpen = $activeAccordionId === id || defaultOpen;
+  // Each accordion manages its own open state independently
+  let isOpen = defaultOpen;
 
   // Toggle accordion state
   function toggle() {
-    if (isOpen) {
-      // If already open, close it
-      setActiveAccordion(null);
-    } else {
-      // If closed, open it and close others
-      setActiveAccordion(id);
-    }
-
-    dispatch('toggle', { id, isOpen: !isOpen });
+    isOpen = !isOpen;
+    dispatch('toggle', { id, isOpen });
   }
 </script>
 

@@ -183,7 +183,7 @@
 <div class="bg-white rounded-lg shadow mb-6">
   <Accordion 
     title="Filter" 
-    defaultOpen={false} 
+    defaultOpen={true}
     mobileOnly={true}
     id="filter"
     on:toggle={({ detail }) => isFilterOpen = detail.isOpen}
