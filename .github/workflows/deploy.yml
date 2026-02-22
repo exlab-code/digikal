@@ -2,55 +2,52 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    # Add permissions for GitHub Pages deployment
-    permissions:
-      contents: write
-    
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          # Fetch all history for proper deployment
-          fetch-depth: 0
-        
+        uses: actions/checkout@v4
+
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
-          cache: 'npm'
+          node-version: 20
+          cache: npm
           cache-dependency-path: website/package-lock.json
-          
+
       - name: Install dependencies
-        run: |
-          cd website
-          npm ci
-          
+        run: npm ci
+        working-directory: website
+
       - name: Build
-        run: |
-          cd website
-          npm run build
-          
-      - name: Ensure .nojekyll file exists
-        run: |
-          touch website/public/.nojekyll
-          
-      - name: Setup Git Identity
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        run: npm run build
+        working-directory: website
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: website/public
-          branch: gh-pages
-          # Add token for authentication
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # Clean up existing files
-          clean: true
+          path: website/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
