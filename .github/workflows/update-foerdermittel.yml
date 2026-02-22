@@ -1,10 +1,6 @@
 name: Update Fördermittel JSON
 
 on:
-  # Trigger when foerdermittel-mcp publishes a new release
-  repository_dispatch:
-    types: [foerdermittel-updated]
-  # Fallback: check daily (in case dispatch is missed)
   schedule:
     - cron: '0 7 */2 * *'
   workflow_dispatch: # Manual trigger
@@ -24,14 +20,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Download latest DB from foerdermittel-mcp
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release download --repo exlab-code/foerdermittel-mcp \
-            --pattern "foerdermittel.db" \
-            --dir . \
-            --clobber
+      - name: Download DB from MCP server
+        run: curl -fSL "${{ vars.MCP_SERVER_URL }}/foerdermittel.db" -o foerdermittel.db
 
       - name: Export JSON
         run: python scripts/export_json.py --db foerdermittel.db -o website/public/foerdermittel.json
