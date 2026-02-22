@@ -19,7 +19,7 @@
 
 <div class="bg-white rounded-lg shadow p-4">
   <h3 class="text-lg font-bold mb-2">MCP Server</h3>
-  <p class="text-sm text-gray-600 mb-3">Durchsuche die Förderdatenbank direkt in Claude, Cursor oder anderen MCP-fähigen Tools.</p>
+  <p class="text-sm text-gray-600 mb-3">Durchsuche die Förderdatenbank direkt in Claude, Copilot, Cursor oder anderen MCP-fähigen Tools.</p>
   <button
     on:click={copyToClipboard}
     class="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"

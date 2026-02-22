@@ -1,13 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <title>DigiKal</title>
+  <title>DigiKal – Digitalisierungsveranstaltungen für Nonprofits</title>
+  <meta name="description" content="Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland. Finde Webinare, Workshops und Förderungen zu Digitalisierung, Fundraising und mehr.">
 
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="DigiKal – Digitalisierungsveranstaltungen für Nonprofits">
+  <meta property="og:description" content="Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland.">
+  <meta property="og:url" content="https://exlab-code.github.io/digikal/">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="DigiKal">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="DigiKal – Digitalisierungsveranstaltungen für Nonprofits">
+  <meta name="twitter:description" content="Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland.">
+
+  <link rel="canonical" href="https://exlab-code.github.io/digikal/">
   <link rel="icon" type="image/png" href="./favicon.png">
-  <!-- Make sure this path is correct -->
   <link rel="stylesheet" href="./bundle.css">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +31,22 @@
   <!-- Umami Analytics -->
   <script defer src="https://umami.common-display.de/script.js" data-website-id="cdc4de63-c907-4782-b2e7-a2b13e589319"></script>
 
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "DigiKal",
+    "url": "https://exlab-code.github.io/digikal/",
+    "description": "Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland.",
+    "inLanguage": "de",
+    "publisher": {
+      "@type": "Organization",
+      "name": "ex:lab"
+    }
+  }
+  </script>
+
   <!-- Start Single Page Apps for GitHub Pages -->
   <script type="text/javascript">
     // Single Page Apps for GitHub Pages
@@ -24,7 +54,7 @@
     // https://github.com/rafgraph/spa-github-pages
     (function(l) {
       if (l.search[1] === '/' ) {
-        var decoded = l.search.slice(1).split('&').map(function(s) { 
+        var decoded = l.search.slice(1).split('&').map(function(s) {
           return s.replace(/~and~/g, '&')
         }).join('?');
         window.history.replaceState(null, null,
@@ -39,5 +69,11 @@
 </head>
 
 <body>
+  <!-- Initial content for SEO crawlers -->
+  <noscript>
+    <h1>DigiKal – Digitalisierungsveranstaltungen für Nonprofits</h1>
+    <p>Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland. Finde Webinare, Workshops und Förderungen zu Digitalisierung, Fundraising und mehr.</p>
+    <p>Bitte aktiviere JavaScript, um diese Seite zu nutzen.</p>
+  </noscript>
 </body>
 </html>
