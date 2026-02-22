@@ -14,7 +14,7 @@
     status = 'submitting';
 
     try {
-      const res = await fetch('https://formsubmit.co/ajax/julius@ex-lab.de', {
+      const res = await fetch('https://formsubmit.co/ajax/dc38e2e986e2200a506c104edc62ddd0', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
