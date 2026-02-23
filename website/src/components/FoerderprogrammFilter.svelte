@@ -346,16 +346,18 @@
 
     <!-- Super-Categories (always visible, not subject to frequency threshold) -->
     {#if superKategorien.length > 0}
-      <div class="tag-group mb-6 pb-4 border-b border-gray-200">
+      <div class="tag-group mb-4">
         <h3 class="tag-group-title font-semibold text-base mb-3">Kategorien</h3>
         <div class="flex flex-wrap gap-1">
           {#each superKategorien as kategorie}
-            <button
-              class="super-kategorie-tag {selectedTags.includes(kategorie) ? 'selected' : ''}"
-              on:click={() => toggleSuperKategorie(kategorie)}
-            >
-              {kategorie}
-            </button>
+            <Tag
+              tag={kategorie}
+              groupId="super_kategorie"
+              selectable={true}
+              selected={selectedTags.includes(kategorie)}
+              count={tagFrequency[kategorie]}
+              onClick={() => toggleSuperKategorie(kategorie)}
+            />
           {/each}
         </div>
       </div>

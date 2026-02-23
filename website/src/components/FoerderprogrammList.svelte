@@ -125,14 +125,13 @@
       {/if}
     </div>
   {:else}
-    <div class="mb-6 space-y-2">
-      <h2 class="text-2xl font-bold py-3 text-gray-800">Relevante Förderprogramme</h2>
-      {#if filterDescription}
-        <div class="inline-block bg-blue-50 px-3 py-1 rounded-full text-sm text-blue-800">
-          {filterDescription}
-        </div>
-      {/if}
+    <div class="mb-4 flex items-center gap-3">
       <p class="text-gray-500 text-sm">{$filteredFoerdermittel.length} Förderprogramme gefunden</p>
+      {#if filterDescription}
+        <span class="inline-block bg-blue-50 px-3 py-1 rounded-full text-sm text-blue-800">
+          {filterDescription}
+        </span>
+      {/if}
     </div>
 
     <div class="space-y-6">

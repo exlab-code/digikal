@@ -1,7 +1,17 @@
 <script>
   import Tag from './Tag.svelte';
+  import { filters, updateFilters } from '../stores/foerdermittelStore';
 
   export let program;
+
+  function toggleTag(tag) {
+    const current = $filters.tags || [];
+    if (current.includes(tag)) {
+      updateFilters({ tags: current.filter(t => t !== tag) });
+    } else {
+      updateFilters({ tags: [...current, tag] });
+    }
+  }
 
   // Format date for display
   function formatShortDate(dateString) {
@@ -224,12 +234,14 @@
       {/if}
 
       <!-- Tags -->
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-1">
         {#each getDisplayTags() as tag}
-          <Tag {tag} groupId={findTagGroup(tag)} />
+          <Tag {tag} groupId={findTagGroup(tag)} onClick={() => toggleTag(tag)} />
         {/each}
         {#if getAllTags().length > getDisplayTags().length}
-          <span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">+{getAllTags().length - getDisplayTags().length} mehr</span>
+          <button class="tag" style="border-color: #d1d5db; background-color: #f3f4f6; color: #6b7280;" on:click>
+            <span class="tag-text">+{getAllTags().length - getDisplayTags().length} mehr</span>
+          </button>
         {/if}
       </div>
     </div>

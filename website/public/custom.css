@@ -148,17 +148,22 @@
 .tag {
   padding: 0.2rem 0.6rem;
   border-radius: 9999px;
-  font-size: 0.8rem;
-  font-weight:500;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 500;
   border: 1px solid #ccc;
   background-color: white;
   color: #333;
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
-  margin-right: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin: 0.15rem;
   max-width: 160px;
+  cursor: pointer;
+}
+
+.tag:hover {
+  opacity: 0.8;
 }
 
 .tag-text {
@@ -193,31 +198,56 @@
   border-color: #f1c40f;
 }
 
+/* Selected state (generic fallback — must come before group overrides) */
+.tag.selected {
+  color: white;
+  background-color: #4b5563;
+}
+
 /* Förderprogramme tag groups */
-.tag-thema {
-  border-color: #8b5cf6; /* Purple for themes */
-  background-color: #f5f3ff;
-}
-
-.tag-zielgruppe {
-  border-color: #ec4899; /* Pink for target audience */
-  background-color: #fdf2f8;
-}
-
-.tag-foerderart {
-  border-color: #10b981; /* Green for funding type */
-  background-color: #f0fdf4;
-}
-
-.tag-foerdergeber {
-  border-color: #3b82f6; /* Blue for funder */
+.tag-super_kategorie {
+  border-color: #3b82f6;
   background-color: #eff6ff;
 }
 
-/* Selected state */
-.tag.selected {
-  color: white;
-  background-color: #ccc;
+.tag-super_kategorie.selected {
+  background-color: #1d4ed8;
+}
+
+.tag-thema {
+  border-color: #8b5cf6;
+  background-color: #f5f3ff;
+}
+
+.tag-thema.selected {
+  background-color: #8b5cf6;
+}
+
+.tag-zielgruppe {
+  border-color: #ec4899;
+  background-color: #fdf2f8;
+}
+
+.tag-zielgruppe.selected {
+  background-color: #ec4899;
+}
+
+.tag-foerderart {
+  border-color: #10b981;
+  background-color: #f0fdf4;
+}
+
+.tag-foerderart.selected {
+  background-color: #10b981;
+}
+
+.tag-foerdergeber {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.tag-foerdergeber.selected {
+  background-color: #3b82f6;
 }
 
 .tag-topic.selected {
@@ -234,22 +264,6 @@
 
 .tag-cost.selected {
   background-color: #f1c40f;
-}
-
-.tag-thema.selected {
-  background-color: #8b5cf6;
-}
-
-.tag-zielgruppe.selected {
-  background-color: #ec4899;
-}
-
-.tag-foerderart.selected {
-  background-color: #10b981;
-}
-
-.tag-foerdergeber.selected {
-  background-color: #3b82f6;
 }
 
 /* Tag group containers */

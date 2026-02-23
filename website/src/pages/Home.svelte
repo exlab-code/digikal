@@ -21,7 +21,7 @@
       <EventFilter defaultOpen={true} />
       <AboutSection defaultOpen={false} />
     </aside>
-    
+
     <div class="lg:col-span-3">
       <EventList />
     </div>
