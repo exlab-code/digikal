@@ -1,6 +1,35 @@
 <script>
+  import { onMount, onDestroy } from 'svelte';
   import { filteredFoerdermittel, isLoading, error, filters } from '../stores/foerdermittelStore';
   import FoerderprogrammCard from './FoerderprogrammCard.svelte';
+
+  const PAGE_SIZE = 50;
+  let visibleCount = PAGE_SIZE;
+  let sentinel;
+  let observer;
+
+  // Reset to first page when filters change
+  $: if ($filteredFoerdermittel) visibleCount = PAGE_SIZE;
+
+  $: visiblePrograms = $filteredFoerdermittel.slice(0, visibleCount);
+  $: hasMore = visibleCount < $filteredFoerdermittel.length;
+
+  onMount(() => {
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        visibleCount += PAGE_SIZE;
+      }
+    }, { rootMargin: '400px' });
+  });
+
+  onDestroy(() => {
+    if (observer) observer.disconnect();
+  });
+
+  $: if (observer && sentinel) {
+    observer.disconnect();
+    observer.observe(sentinel);
+  }
 
   let filterDescription = '';
 
@@ -107,9 +136,20 @@
     </div>
 
     <div class="space-y-6">
-      {#each $filteredFoerdermittel as program (program.id)}
+      {#each visiblePrograms as program (program.id)}
         <FoerderprogrammCard {program} />
       {/each}
     </div>
+
+    {#if hasMore}
+      <div bind:this={sentinel} class="flex justify-center py-8">
+        <button
+          on:click={() => visibleCount += PAGE_SIZE}
+          class="px-6 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+        >
+          Weitere {Math.min(PAGE_SIZE, $filteredFoerdermittel.length - visibleCount)} von {$filteredFoerdermittel.length} anzeigen
+        </button>
+      </div>
+    {/if}
   {/if}
 </div>
