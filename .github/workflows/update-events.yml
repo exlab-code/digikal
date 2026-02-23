@@ -47,7 +47,7 @@ jobs:
           DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
           DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python events/event_analyzer.py
+        run: python events/event_analyzer.py --limit 500
 
       - name: Run calendar sync
         env:

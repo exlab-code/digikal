@@ -25,21 +25,6 @@
       "full_page_selector": ".article-content"
     },
     {
-      "name": "Bitkom Akademie",
-      "url": "https://bitkom-akademie.de/event-list",
-      "type": "html",
-      "event_selector": "article.app-seminar-list-card",
-      "link_selector": "a",
-      "full_page_selector": "main",
-      "use_firecrawl": true,
-      "pagination": {
-        "type": "url-param",
-        "param_name": "page",
-        "start_index": 1,
-        "max_pages": 25
-      }
-    },
-    {
       "name": "Open Transfer",
       "url": "https://opentransfer.de/event/",
       "type": "html",
