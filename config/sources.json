@@ -25,25 +25,18 @@
       "full_page_selector": ".article-content"
     },
     {
-      "name": "Smart Services BW",
-      "url": "https://smart-service-bw.de/veranstaltungen/",
-      "type": "html",
-      "event_selector": ".custom--dates",
-      "link_selector": ".post--btn a",
-      "full_page_selector": ".tribe-events-calendar-list"
-    },
-    {
       "name": "Bitkom Akademie",
-      "url": "https://bitkom-akademie.de/seminare",
+      "url": "https://bitkom-akademie.de/event-list",
       "type": "html",
-      "event_selector": ".views-row",
+      "event_selector": "article.app-seminar-list-card",
       "link_selector": "a",
-      "full_page_selector": ".main-content",
+      "full_page_selector": "main",
+      "use_firecrawl": true,
       "pagination": {
         "type": "url-param",
         "param_name": "page",
-        "start_index": 0,
-        "max_pages": 20
+        "start_index": 1,
+        "max_pages": 25
       }
     },
     {
@@ -98,7 +91,8 @@
       "type": "html",
       "event_selector": ".liste-artikel-element",
       "link_selector": "a",
-      "full_page_selector": ".artikel"
+      "full_page_selector": ".artikel",
+      "use_firecrawl": true
     },
     {
       "name": "Initiative D21",
