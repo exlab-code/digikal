@@ -78,6 +78,22 @@
             Förderprogramme
           </a>
         </li>
+        <li>
+          <a
+            href="/about"
+            on:click|preventDefault={(e) => {
+              navigateTo('/about', e);
+              isMenuOpen = false;
+              window.scrollTo(0, 0);
+            }}
+            class="block md:inline-block px-2 py-2 md:py-1 text-gray-700 font-medium hover:text-primary-600 relative
+                  {currentRoute === 'about' ? 'text-primary-600' : ''}
+                  after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-primary-600 after:w-full
+                  {currentRoute === 'about' ? 'after:block' : 'after:hidden'}"
+          >
+            Über DigiKal
+          </a>
+        </li>
       </ul>
     </nav>
     

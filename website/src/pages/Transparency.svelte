@@ -10,7 +10,7 @@
   <section class="mb-10">
     <h2 class="text-xl font-semibold text-gray-800 mb-3">Was ist DigiKal?</h2>
     <p class="text-gray-600 leading-relaxed">
-      DigiKal sammelt automatisch Digitalisierungsveranstaltungen und F&ouml;rderprogramme f&uuml;r gemeinn&uuml;tzige Organisationen in Deutschland. Alles Open Source, alles aus &ouml;ffentlich zug&auml;nglichen Quellen. Ein Projekt von <a href="https://buerofalk.de" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">B&uuml;ro Falk</a> / <a href="https://ex-lab.de" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">ex:lab</a>.
+      DigiKal sammelt automatisch Digitalisierungsveranstaltungen und F&ouml;rderprogramme f&uuml;r gemeinn&uuml;tzige Organisationen in Deutschland. Alles Open Source, alles aus &ouml;ffentlich zug&auml;nglichen Quellen. Ein Projekt von Julius Falk / <a href="https://ex-lab.de" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">ex:lab</a>.
     </p>
   </section>
 
