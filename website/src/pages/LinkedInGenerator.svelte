@@ -129,7 +129,7 @@
       if (!groups[day]) continue;
       const firstEventDate = new Date(groups[day][0].start_date);
       const dateStr = firstEventDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
-      text += `${day}, ${dateStr}.\n`;
+      text += `${day}, ${dateStr}\n`;
 
       for (const event of groups[day]) {
         const timeStr = formatTime(event.start_date);
