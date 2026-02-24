@@ -16,14 +16,14 @@
 </script>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-    <aside class="lg:col-span-1 space-y-6">
+  <div class="grid grid-cols-1 lg:grid-cols-[2fr_5fr] gap-8">
+    <aside class="space-y-6">
       <McpServerCard />
       <FoerderprogrammFilter defaultOpen={true} />
       <FoerdermittelAbout defaultOpen={false} />
     </aside>
 
-    <div class="lg:col-span-3">
+    <div>
       <FoerderprogrammList />
     </div>
   </div>

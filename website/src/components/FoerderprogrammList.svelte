@@ -38,7 +38,8 @@
     const parts = [];
     if ($filters.bundesland) parts.push(`Region "${getBundeslandDisplay($filters.bundesland)}"`);
     if ($filters.fundingType) parts.push(`Förderart "${getFundingTypeDisplay($filters.fundingType)}"`);
-    if ($filters.providerType) parts.push(`Fördergeber "${getProviderTypeDisplay($filters.providerType)}"`);
+    if ($filters.foerdergeber) parts.push(`Fördergeber "${$filters.foerdergeber}"`);
+    if ($filters.source) parts.push(`Quelle "${$filters.source}"`);
     if ($filters.tags && $filters.tags.length > 0) parts.push(`${$filters.tags.length} Tag${$filters.tags.length > 1 ? 's' : ''}`);
 
     if (parts.length > 0) {
@@ -84,16 +85,6 @@
     return typeMap[type] || type;
   }
 
-  function getProviderTypeDisplay(type) {
-    const providerMap = {
-      'bund': 'Bund',
-      'land': 'Land',
-      'eu': 'EU',
-      'stiftung': 'Stiftung',
-      'sonstige': 'Sonstige'
-    };
-    return providerMap[type] || type;
-  }
 </script>
 
 <div>

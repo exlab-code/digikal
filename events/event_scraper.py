@@ -73,6 +73,13 @@ import pickle
 from functools import lru_cache
 from dotenv import load_dotenv
 
+# Optional: Firecrawl for sources that block direct requests
+try:
+    from firecrawl import FirecrawlApp
+    FIRECRAWL_AVAILABLE = True
+except ImportError:
+    FIRECRAWL_AVAILABLE = False
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -415,9 +422,16 @@ class EventScraper:
                     password=directus_config.get("password")
                 )
         
+        # Initialize Firecrawl client if API key is available
+        self.firecrawl_client = None
+        firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+        if firecrawl_api_key and FIRECRAWL_AVAILABLE:
+            self.firecrawl_client = FirecrawlApp(api_key=firecrawl_api_key)
+            logger.info("Firecrawl client initialized")
+
         # Create output directory for file-based outputs
         os.makedirs(self.output_dir, exist_ok=True)
-        
+
         # Create cache directory if specified
         if cache_dir:
             os.makedirs(cache_dir, exist_ok=True)
@@ -466,14 +480,16 @@ class EventScraper:
         content_json = json.dumps(content_for_hash, ensure_ascii=False, sort_keys=True)
         return self.calculate_hash(content_json)
         
-    def get_page_content(self, url, headers=None, use_cache=True):
-        """Get content from a URL with error handling and caching.
-        
+    def get_page_content(self, url, headers=None, use_cache=True, max_retries=3, use_firecrawl=False):
+        """Get content from a URL with error handling, caching, and retry logic.
+
         Args:
             url (str): URL to fetch
             headers (dict): Optional HTTP headers
             use_cache (bool): Whether to use the URL cache
-            
+            max_retries (int): Maximum number of retry attempts for transient errors
+            use_firecrawl (bool): Use Firecrawl API instead of direct requests
+
         Returns:
             str: HTML content or None if fetch fails
         """
@@ -483,29 +499,86 @@ class EventScraper:
             if cached_content:
                 logger.debug(f"Using cached content for {url}")
                 return cached_content
-        
+
+        # Use Firecrawl if requested and available
+        if use_firecrawl and self.firecrawl_client:
+            return self._fetch_with_firecrawl(url, use_cache)
+
         if not headers:
             headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
                 "Accept-Charset": "utf-8"
             }
-        
+
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(url, headers=headers, timeout=30)
+
+                # Retry on 429 (rate limit) with exponential backoff
+                if response.status_code == 429:
+                    # Fall back to Firecrawl if available
+                    if self.firecrawl_client:
+                        logger.info(f"Rate limited on {url}, falling back to Firecrawl")
+                        return self._fetch_with_firecrawl(url, use_cache)
+                    wait_time = (attempt + 1) * 5
+                    logger.warning(f"Rate limited (429) on {url}, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(wait_time)
+                    continue
+
+                response.raise_for_status()
+                # Ensure correct encoding detection
+                if response.encoding == 'ISO-8859-1':
+                    response.encoding = 'utf-8'
+
+                content = response.text
+
+                # Cache the content if caching is enabled
+                if use_cache:
+                    self.url_cache.set(url, content)
+
+                return content
+            except requests.exceptions.HTTPError as e:
+                if attempt < max_retries - 1 and response.status_code >= 500:
+                    wait_time = (attempt + 1) * 3
+                    logger.warning(f"Server error on {url}, retrying in {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(wait_time)
+                    continue
+                logger.error(f"Error fetching {url}: {str(e)}")
+                return None
+            except Exception as e:
+                logger.error(f"Error fetching {url}: {str(e)}")
+                return None
+
+        logger.error(f"Failed to fetch {url} after {max_retries} attempts")
+        return None
+
+    def _fetch_with_firecrawl(self, url, use_cache=True):
+        """Fetch page content using Firecrawl API.
+
+        Args:
+            url (str): URL to fetch
+            use_cache (bool): Whether to cache the result
+
+        Returns:
+            str: Raw HTML content or None if fetch fails
+        """
         try:
-            response = requests.get(url, headers=headers, timeout=30)
-            response.raise_for_status()
-            # Ensure correct encoding detection
-            if response.encoding == 'ISO-8859-1':
-                response.encoding = 'utf-8'
-            
-            content = response.text
-            
-            # Cache the content if caching is enabled
+            logger.info(f"Fetching {url} via Firecrawl")
+            result = self.firecrawl_client.scrape(url, formats=['rawHtml'])
+
+            content = result.raw_html
+            if not content:
+                logger.warning(f"Firecrawl returned no rawHtml for {url}")
+                return None
+
             if use_cache:
                 self.url_cache.set(url, content)
-            
+
             return content
         except Exception as e:
-            logger.error(f"Error fetching {url}: {str(e)}")
+            logger.error(f"Firecrawl error fetching {url}: {str(e)}")
             return None
 
     def normalize_text(self, text):
@@ -703,8 +776,9 @@ class EventScraper:
         """
         full_event_details = []
         
-        # Get the page content
-        content = self.get_page_content(url)
+        # Get the page content (use Firecrawl if source requires it)
+        use_firecrawl = source.get('use_firecrawl', False)
+        content = self.get_page_content(url, use_firecrawl=use_firecrawl)
         if not content:
             return []
 
@@ -762,6 +836,10 @@ class EventScraper:
                 
                 # Find the link to the detail page
                 link_element = element.select_one(source['link_selector'])
+                # Fallback: check if the event element's parent is an <a> tag
+                # (common pattern for modern card-based layouts)
+                if (not link_element or not link_element.has_attr('href')) and element.parent and element.parent.name == 'a' and element.parent.has_attr('href'):
+                    link_element = element.parent
                 if not link_element or not link_element.has_attr('href'):
                     content_log.write("NO LINK FOUND\n\n")
                     
@@ -802,9 +880,9 @@ class EventScraper:
                         content_log.write(f"DUPLICATE URL - ID: {item_id}\n\n")
                         continue
 
-                # Get the detail page
+                # Get the detail page (use Firecrawl if source requires it)
                 logger.info(f"Following link to {event_url}")
-                detail_content = self.get_page_content(event_url)
+                detail_content = self.get_page_content(event_url, use_firecrawl=use_firecrawl)
                 
                 if not detail_content:
                     content_log.write("COULD NOT FETCH DETAIL PAGE\n\n")

@@ -208,30 +208,24 @@ export const filteredFoerdermittel = derived(
         }
       }
 
-      // Filter by fördergeber
+      // Filter by fördergeber (funding_organization)
       if ($filters.foerdergeber && $filters.foerdergeber !== '') {
-        // Check if program has tag_groups
-        if (!program.tag_groups) {
-          return false;
-        }
-
-        const tagGroupsObj = typeof program.tag_groups === 'string'
-          ? JSON.parse(program.tag_groups)
-          : program.tag_groups;
-
-        // Check if the selected fördergeber is in the program's foerdergeber array
-        if (!tagGroupsObj.foerdergeber || !Array.isArray(tagGroupsObj.foerdergeber)) {
-          return false;
-        }
-
-        if (!tagGroupsObj.foerdergeber.includes($filters.foerdergeber)) {
+        if (program.funding_organization !== $filters.foerdergeber) {
           return false;
         }
       }
 
-      // Filter by source
+      // Filter by source (derived from source_url domain)
       if ($filters.source && $filters.source !== '') {
-        if (program.source !== $filters.source) {
+        if (!program.source_url) {
+          return false;
+        }
+        try {
+          const domain = new URL(program.source_url).hostname;
+          if (domain !== $filters.source) {
+            return false;
+          }
+        } catch (e) {
           return false;
         }
       }

@@ -16,7 +16,8 @@ export async function getAllEvents() {
     // Build query parameters - only approved events
     const params = new URLSearchParams({
       filter: JSON.stringify({ approved: { _eq: true } }),
-      sort: "start_date"
+      sort: "start_date",
+      limit: "-1"
     });
     
     // Use the Nginx proxy endpoint for items

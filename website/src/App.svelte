@@ -2,9 +2,9 @@
   import { onMount } from 'svelte';
   import Header from './components/Header.svelte';
   import Home from './pages/Home.svelte';
-  import About from './pages/About.svelte';
   import Foerderprogramme from './pages/Foerderprogramme.svelte';
   import LinkedInGenerator from './pages/LinkedInGenerator.svelte';
+  import Transparency from './pages/Transparency.svelte';
   import { trackPageView } from './services/analytics';
 
   // Simple routing
@@ -71,7 +71,7 @@
   {#if currentRoute === 'home'}
     <Home />
   {:else if currentRoute === 'about'}
-    <About />
+    <Transparency />
   {:else if currentRoute === 'foerderprogramme'}
     <Foerderprogramme />
   {:else if currentRoute === 'linkedin-generator'}
@@ -80,9 +80,10 @@
 </div>
 
 <footer class="bg-gray-800 text-white py-6 mt-8">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <p class="text-center text-gray-300 text-sm">
-      &copy; {new Date().getFullYear()} Veranstaltungskalender für Non-Profit Digitalisierung
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+    <p class="text-gray-300 text-sm">
+      &copy; {new Date().getFullYear()} DigiKal &mdash; <a href="https://buerofalk.de" target="_blank" rel="noopener noreferrer" class="hover:text-white underline">Büro Falk</a> / <a href="https://ex-lab.de" target="_blank" rel="noopener noreferrer" class="hover:text-white underline">ex:lab</a>
     </p>
+    <a href="/about" on:click|preventDefault={(e) => { navigateTo('/about', e); window.scrollTo(0, 0); }} class="text-sm text-gray-400 hover:text-white">&Uuml;ber DigiKal</a>
   </div>
 </footer>

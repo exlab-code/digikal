@@ -257,12 +257,11 @@
         Erneut versuchen
       </button>
     </div>
-  {:else}<div class="copyfield w-80 h-80 m-auto">
-    <textarea 
-       
+  {:else}
+    <textarea
       bind:value={$postText}
       class="w-full h-96 font-mono text-base p-6 border border-gray-200 rounded-lg resize-y mb-6 shadow-inner bg-gray-50 text-gray-800"
-    ></textarea></div>
+    ></textarea>
     
     <div class="flex gap-4 mb-6">
       <button 

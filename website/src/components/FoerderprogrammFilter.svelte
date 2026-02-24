@@ -24,11 +24,13 @@
   let foerdergeberOptions = [];
   let sourceOptions = [];
 
-  // Initialize tag frequency and grouped tags on mount
+  // Initialize tag frequency, grouped tags, and options on mount
   onMount(() => {
     superKategorien = getSuperKategorien($foerdermittel);
     tagFrequency = calculateTagFrequency($foerdermittel);
     groupedTags = getGroupedTags($foerdermittel, superKategorien);
+    foerdergeberOptions = getFoerdergeberOptions($foerdermittel);
+    sourceOptions = getSourceOptions($foerdermittel);
   });
 
   // Deadline horizon options
@@ -108,13 +110,17 @@
     superKategorien = getSuperKategorien($filteredFoerdermittel);
   }
 
-  // Update tag frequency and fördergeber options based on filtered results
+  // Update tag frequency based on filtered results
   $: if ($filteredFoerdermittel && $filteredFoerdermittel.length > 0) {
     minTagFrequency = getMinTagFrequency($filteredFoerdermittel.length);
     tagFrequency = calculateTagFrequency($filteredFoerdermittel);
     groupedTags = getGroupedTags($filteredFoerdermittel, superKategorien);
-    foerdergeberOptions = getFoerdergeberOptions($filteredFoerdermittel);
-    sourceOptions = getSourceOptions($filteredFoerdermittel);
+  }
+
+  // Populate Fördergeber and Quelle from ALL programs (not filtered)
+  $: if ($foerdermittel && $foerdermittel.length > 0) {
+    foerdergeberOptions = getFoerdergeberOptions($foerdermittel);
+    sourceOptions = getSourceOptions($foerdermittel);
   }
 
   function calculateTagFrequency(programs) {
@@ -181,37 +187,33 @@
     const foerdergeber = new Set();
 
     programs.forEach(program => {
-      if (program.tag_groups) {
-        const tagGroupsObj = typeof program.tag_groups === 'string'
-          ? JSON.parse(program.tag_groups)
-          : program.tag_groups;
-
-        if (tagGroupsObj.foerdergeber && Array.isArray(tagGroupsObj.foerdergeber)) {
-          tagGroupsObj.foerdergeber.forEach(fg => foerdergeber.add(fg));
-        }
+      if (program.funding_organization) {
+        foerdergeber.add(program.funding_organization);
       }
     });
 
-    const options = [{ value: '', label: 'Alle Fördergeber' }];
-    Array.from(foerdergeber).sort().forEach(fg => {
-      options.push({ value: fg, label: fg });
-    });
-
-    return options;
+    return Array.from(foerdergeber).sort();
   }
 
   function getSourceOptions(programs) {
+    const sourceMap = {
+      'www.foerderdatenbank.de': 'Förderdatenbank (BMWK)',
+      'foerderdatenbank.d-s-e-e.de': 'DSEE Förderdatenbank'
+    };
     const sources = new Set();
 
     programs.forEach(program => {
-      if (program.source) {
-        sources.add(program.source);
+      if (program.source_url) {
+        try {
+          const domain = new URL(program.source_url).hostname;
+          sources.add(domain);
+        } catch (e) { /* ignore invalid URLs */ }
       }
     });
 
     const options = [{ value: '', label: 'Alle Quellen' }];
-    Array.from(sources).sort().forEach(source => {
-      options.push({ value: source, label: source });
+    Array.from(sources).sort().forEach(domain => {
+      options.push({ value: domain, label: sourceMap[domain] || domain });
     });
 
     return options;
@@ -278,7 +280,16 @@
     applyFilters();
   }
 
-  function selectFoerdergeber(event) {
+  function handleFoerdergeberInput(event) {
+    const val = event.target.value;
+    // Only apply filter if value matches an option or is empty
+    if (val === '' || foerdergeberOptions.includes(val)) {
+      selectedFoerdergeber = val;
+      applyFilters();
+    }
+  }
+
+  function handleFoerdergeberChange(event) {
     selectedFoerdergeber = event.target.value;
     applyFilters();
   }
@@ -412,18 +423,23 @@
       </select>
     </div>
 
-    <!-- Fördergeber dropdown -->
+    <!-- Fördergeber searchable input -->
     <div class="tag-group mb-4">
       <h3 class="tag-group-title">Fördergeber</h3>
-      <select
+      <input
+        type="text"
+        list="foerdergeber-list"
         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+        placeholder="Fördergeber suchen..."
         bind:value={selectedFoerdergeber}
-        on:change={selectFoerdergeber}
-      >
-        {#each foerdergeberOptions as option}
-          <option value={option.value}>{option.label}</option>
+        on:input={handleFoerdergeberInput}
+        on:change={handleFoerdergeberChange}
+      />
+      <datalist id="foerdergeber-list">
+        {#each foerdergeberOptions as fg}
+          <option value={fg} />
         {/each}
-      </select>
+      </datalist>
     </div>
 
     <!-- Source dropdown -->
