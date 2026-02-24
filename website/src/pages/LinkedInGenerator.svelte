@@ -120,7 +120,7 @@
     const groups = groupEventsByWeekday(nextWeekEvents);
 
     let text = `Digitalisierung im Non-Profit-Bereich – Veranstaltungen vom ${dateRangeStr}\n\n`;
-    text += `${nextWeekEvents.length} kostenlose und kostengünstige Webinare, Workshops und Seminare für gemeinnützige Organisationen in der kommenden Woche:\n\n`;
+    text += `${nextWeekEvents.length} Webinare, Workshops und Seminare für gemeinnützige Organisationen diese Woche auf digikal.org:\n\n`;
 
     // Sort weekdays in calendar order
     const weekdayOrder = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
@@ -129,7 +129,7 @@
       if (!groups[day]) continue;
       const firstEventDate = new Date(groups[day][0].start_date);
       const dateStr = firstEventDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
-      text += `${day}, ${dateStr}.\n\n`;
+      text += `${day}, ${dateStr}.\n`;
 
       for (const event of groups[day]) {
         const timeStr = formatTime(event.start_date);
@@ -150,13 +150,14 @@
           }
         }
 
-        text += `> ${title}\n`;
-        text += `  ${timeStr} Uhr`;
-        if (organizer) text += ` · ${organizer}`;
-        text += ` · ${location}`;
-        if (costText) text += ` · ${costText}`;
-        text += '\n';
-        if (link) text += `  ${link}\n`;
+        let details = `${timeStr} Uhr`;
+        if (organizer) details += ` · ${organizer}`;
+        details += ` · ${location}`;
+        if (costText) details += ` · ${costText}`;
+
+        text += `${title}\n`;
+        text += `${details}\n`;
+        if (link) text += `${link}\n`;
         text += '\n';
       }
     }
