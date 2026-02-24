@@ -84,16 +84,8 @@
     return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
   }
 
-  // Emoji for weekdays
-  const weekdayEmojis = {
-    Montag: '🔵',
-    Dienstag: '🟢',
-    Mittwoch: '🟠',
-    Donnerstag: '🟣',
-    Freitag: '🟡',
-    Samstag: '⚫',
-    Sonntag: '🔴'
-  };
+  // Weekday separator
+  const weekdayMarker = '—';
 
   // Group events by weekday
   function groupEventsByWeekday(events) {
@@ -127,46 +119,52 @@
 
     const groups = groupEventsByWeekday(nextWeekEvents);
 
-    let text = `💁‍♂️ Digitalisierungs Service Post \n 📅 Kommende Veranstaltungen zur Digitalisierung im Non-Profit-Bereich\n\n`;
-    // text += 'Hier sind die wichtigsten Veranstaltungen für Non-Profit-Digitalisierungsprofis in der nächsten Woche:\n\n';
+    let text = `Digitalisierung im Non-Profit-Bereich – Veranstaltungen vom ${dateRangeStr}\n\n`;
+    text += `${nextWeekEvents.length} kostenlose und kostengünstige Webinare, Workshops und Seminare für gemeinnützige Organisationen in der kommenden Woche:\n\n`;
 
     // Sort weekdays in calendar order
     const weekdayOrder = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
 
     for (const day of weekdayOrder) {
       if (!groups[day]) continue;
-      const emoji = weekdayEmojis[day] || '';
       const firstEventDate = new Date(groups[day][0].start_date);
-      const dateStr = firstEventDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      text += `${emoji} ${day}, ${dateStr}\n`;
+      const dateStr = firstEventDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+      text += `${day}, ${dateStr}.\n\n`;
 
       for (const event of groups[day]) {
         const timeStr = formatTime(event.start_date);
         const title = event.title || 'Kein Titel';
-        const organizer = event.source || 'Unbekannter Veranstalter';
-        const location = event.location ? `📍 ${event.location}` : '💻 Online';
+        const organizer = event.source || '';
+        const location = event.location || 'Online';
         const link = event.website || event.register_link || '';
-        const linkText = link ? `🔗 ${link}` : '🔗 Keine Anmeldelink verfügbar';
-        
-        // Add cost information
+
+        // Cost info
         let costText = '';
         if (event.cost !== undefined && event.cost !== null && event.cost !== '') {
-          if (event.cost === 0 || event.cost === '0' || 
-              event.cost === 'kostenlos' || event.cost === 'Kostenlos' || 
+          if (event.cost === 0 || event.cost === '0' ||
+              event.cost === 'kostenlos' || event.cost === 'Kostenlos' ||
               event.cost === 'free' || event.cost === 'Free') {
-            costText = '💰 Kostenlos';
+            costText = 'Kostenlos';
           } else {
-            costText = `💰 ${typeof event.cost === 'number' ? `${event.cost} €` : event.cost}`;
+            costText = typeof event.cost === 'number' ? `${event.cost} €` : event.cost;
           }
         }
 
-        text += `🔖 ${title}\n    🕒 ${timeStr} \n    👥 ${organizer}\n    ${location}\n    ${costText ? `${costText}\n  ` : ''}  ${linkText}\n\n`;
+        text += `> ${title}\n`;
+        text += `  ${timeStr} Uhr`;
+        if (organizer) text += ` · ${organizer}`;
+        text += ` · ${location}`;
+        if (costText) text += ` · ${costText}`;
+        text += '\n';
+        if (link) text += `  ${link}\n`;
+        text += '\n';
       }
-      text += '———\n\n';
     }
 
-    text += '🌐 Weitere Veranstaltungen findest du auf DigiKal: digikal.org\n';
-    text += '#nonprofitdigital #veranstaltungen #digitalisierung\n';
+    text += `---\n\n`;
+    text += `Alle Veranstaltungen, Kalender-Abo und Förderprogramme für Nonprofits:\n`;
+    text += `https://digikal.org\n\n`;
+    text += `#nonprofit #digitalisierung #ehrenamt #ngos #weiterbildung`;
 
     postText.set(text);
   }
