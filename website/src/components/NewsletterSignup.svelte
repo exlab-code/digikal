@@ -4,12 +4,19 @@
   import { trackEvent } from '../services/analytics';
 
   let email = '';
+  let honeypot = '';
   let status = 'idle'; // idle | submitting | success | error
   let copySuccess = false;
   let copyTimeout;
 
-  function handleSubmit() {
+  function handleSubmit(e) {
     if (!email) return;
+    // Honeypot: bots fill hidden fields, humans don't
+    if (honeypot) {
+      e.preventDefault();
+      status = 'success'; // Fake success for bots
+      return;
+    }
     status = 'submitting';
     trackEvent('newsletter_signup');
     // Small delay to let the native form submit to the iframe
@@ -54,6 +61,8 @@
         class="flex flex-col gap-2"
       >
         <input type="hidden" name="l" value="c8997035-384b-4a40-aa92-939e978ad46f" />
+        <!-- Honeypot: invisible to humans, bots fill it -->
+        <input type="text" name="website_url" bind:value={honeypot} style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" tabindex="-1" autocomplete="off" />
         <input
           type="email"
           name="email"
