@@ -1,0 +1,59 @@
+name: Monthly Newsletter
+
+on:
+  schedule:
+    - cron: '0 7 25 * *'  # 25th of each month at 07:00 UTC (08:00 CET)
+  workflow_dispatch:
+    inputs:
+      month:
+        description: 'Month (1-12), leave empty for next month'
+        required: false
+      year:
+        description: 'Year, leave empty for current/next year'
+        required: false
+      editorial:
+        description: 'Custom editorial text (optional)'
+        required: false
+      no_schedule:
+        description: 'Create as draft only (no scheduling)'
+        type: boolean
+        default: false
+
+jobs:
+  generate-newsletter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Generate and schedule newsletter
+        env:
+          DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
+          DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
+          LISTMONK_URL: ${{ secrets.LISTMONK_URL }}
+          LISTMONK_USER: ${{ secrets.LISTMONK_USER }}
+          LISTMONK_API: ${{ secrets.LISTMONK_API }}
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.month }}" ]; then
+            ARGS="$ARGS --month ${{ inputs.month }}"
+          fi
+          if [ -n "${{ inputs.year }}" ]; then
+            ARGS="$ARGS --year ${{ inputs.year }}"
+          fi
+          if [ -n "${{ inputs.editorial }}" ]; then
+            ARGS="$ARGS --editorial \"${{ inputs.editorial }}\""
+          fi
+          if [ "${{ inputs.no_schedule }}" = "true" ]; then
+            ARGS="$ARGS --no-schedule"
+          fi
+          eval python newsletter/generate_newsletter.py $ARGS
