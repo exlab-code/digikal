@@ -189,80 +189,98 @@
     const canvas = imageCanvas;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const W = 1200;
-    const H = 630;
+    const W = 1080;
+    const H = 1080;
+    const R = 40;
     canvas.width = W;
     canvas.height = H;
 
-    // Background gradient
-    const grad = ctx.createLinearGradient(0, 0, W, H);
+    // White background with rounded corners
+    ctx.fillStyle = '#ffffff';
+    roundRect(ctx, 0, 0, W, H, R);
+    ctx.fill();
+
+    // Blue card inset
+    const pad = 60;
+    const cardR = 24;
+    const grad = ctx.createLinearGradient(pad, pad, W - pad, H - pad);
     grad.addColorStop(0, '#2563eb');
     grad.addColorStop(1, '#3178ff');
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
+    roundRect(ctx, pad, pad, W - pad * 2, H - pad * 2, cardR);
+    ctx.fill();
 
     // Subtle decorative circles
+    ctx.save();
+    roundRect(ctx, pad, pad, W - pad * 2, H - pad * 2, cardR);
+    ctx.clip();
     ctx.globalAlpha = 0.06;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(950, 120, 200, 0, Math.PI * 2);
+    ctx.arc(800, 180, 200, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(1050, 500, 150, 0, Math.PI * 2);
+    ctx.arc(880, 850, 160, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    const x = pad + 60;
 
     // DigiKal logo text
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 72px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText('DigiKal', 80, 140);
+    ctx.font = 'bold 80px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('DigiKal', x, 230);
 
     // digikal.org below logo
-    ctx.font = '28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.font = '30px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.globalAlpha = 0.7;
-    ctx.fillText('digikal.org', 80, 185);
+    ctx.fillText('digikal.org', x, 280);
     ctx.globalAlpha = 1;
 
     // Divider line
     ctx.strokeStyle = 'rgba(255,255,255,0.3)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(80, 215);
-    ctx.lineTo(400, 215);
+    ctx.moveTo(x, 320);
+    ctx.lineTo(x + 350, 320);
     ctx.stroke();
 
     // Subline
-    ctx.font = '30px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.globalAlpha = 0.85;
     ctx.fillStyle = '#ffffff';
-    ctx.fillText('Webinare, Workshops & Seminare', 80, 280);
-    ctx.fillText('für gemeinnützige Organisationen', 80, 320);
+    ctx.fillText('Webinare, Workshops & Seminare', x, 400);
+    ctx.fillText('für gemeinnützige Organisationen', x, 445);
     ctx.globalAlpha = 1;
 
     // Main date line
     const { start, end, year } = getDateRange();
-    const dateLine = start && end ? `Events in der Woche vom ${start} – ${end}${year}` : 'Events der kommenden Woche';
+    const dateLine = start && end ? `Events in der Woche` : 'Events der kommenden Woche';
+    const dateLine2 = start && end ? `vom ${start} – ${end}${year}` : '';
 
-    ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(dateLine, 80, 430);
+    ctx.fillText(dateLine, x, 580);
+    if (dateLine2) {
+      ctx.fillText(dateLine2, x, 645);
+    }
 
     // Event count badge
     if (eventsCount > 0) {
       const countText = `${eventsCount} Veranstaltungen`;
-      ctx.font = 'bold 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.font = 'bold 34px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       const metrics = ctx.measureText(countText);
-      const badgeW = metrics.width + 40;
-      const badgeH = 52;
-      const badgeX = 80;
-      const badgeY = 470;
+      const badgeW = metrics.width + 48;
+      const badgeH = 56;
+      const badgeX = x;
+      const badgeY = 700;
 
       ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 26);
+      roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 28);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(countText, badgeX + 20, badgeY + 37);
+      ctx.fillText(countText, badgeX + 24, badgeY + 40);
     }
 
     imageUrl = canvas.toDataURL('image/png');
