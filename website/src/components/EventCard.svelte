@@ -79,7 +79,7 @@
       <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{event.title}</h3>
       
       <!-- Event metadata -->
-      <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
+      <div class="flex flex-wrap gap-4 text-sm font-medium text-gray-700 mb-3">
         <!-- Time (only if a real time is present in start_date) -->
         {#if startTime}
         <div class="flex items-center gap-2">

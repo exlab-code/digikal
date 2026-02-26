@@ -42,7 +42,8 @@ class EventData(BaseModel):
     end_date: Optional[str] = Field(None, description="Enddatum im ISO-Format")
     end_time: Optional[str] = Field(None, description="Endzeit (HH:MM)")
     location: str = Field(..., min_length=1, description="Physischer Ort oder 'Online'")
-    organizer: str = Field(..., min_length=1, description="Veranstalter")
+    organizer: str = Field(..., min_length=1, description="Veranstalter (Organisation, nicht Einzelperson)")
+    speaker: Optional[str] = Field(None, description="Referent*in / Dozent*in / Sprecher*in")
     tags: List[str] = Field(default_factory=list, max_length=5, description="Schlagwörter (max 5)")
     tag_groups: Optional[TagGroups] = Field(None, description="Tags nach Kategorien organisiert")
     cost: str = Field(default="Kostenlos", description="Preisinformationen")
@@ -450,116 +451,57 @@ VALIDATED EXTRACTION:
             return None, {"total_tokens": 0}
     
     # Cache for prompt templates to avoid rebuilding them each time
-    _prompt_template = """
-    Analysiere diese Veranstaltungsinformation und extrahiere strukturierte Daten:
-    
-    {extracted_info}
-    LISTING TEXT:
-    {listing_text}
-    
-    DETAIL TEXT:
-    {detail_text}
-    
-    URL: {url}
-    
-    
-    
-    Extrahiere die folgenden Informationen im JSON Format:
-    - title: Der Titel der Veranstaltung
-    - description: Eine prägnante Beschreibung (MAXIMAL 450 Zeichen). Fokussiere auf die wichtigsten Informationen.
-    - start_date: Startdatum im ISO-Format (YYYY-MM-DD)
-    - start_time: Startzeit (HH:MM)
-    - end_date: Enddatum falls angegeben
-    - end_time: Endzeit falls angegeben
-    - location: Physischer Ort oder "Online"
-    - organizer: Die Organisation, die die Veranstaltung durchführt
-    - tags: Schlagwörter für die Veranstaltung (Array von Strings). Extrahiere relevante Tags in diesen Kategorien:
-      * Themen-Tags: ALLGEMEINE Hauptthemen der Veranstaltung (z.B. KI, Datenschutz, Social Media)
-      * Format-Tags: Art der Veranstaltung (z.B. Workshop, Webinar, Konferenz, Forbildung)
-      * Zielgruppen-Tags: Für wen ist die Veranstaltung gedacht (z.B. Vereine, Stiftungen)
-      * Kosten-Tags: Füge "Kostenlos" hinzu, wenn die Veranstaltung kostenlos ist
-    - tag_groups: Organisiere die Tags nach Kategorien (Objekt mit Arrays):
-      * topic: Themen-Tags
-      * format: Format-Tags
-      * audience: Zielgruppen-Tags
-      * cost: Kosten-Tags
-    - cost: Preisinformationen oder "Kostenlos"
-    - registration_link: URL für die Anmeldung falls verfügbar
-    - relevancy_score: Relevanzwert (0-100) für Non-Profit digitale Transformation
+    _prompt_template = """\
+Extrahiere strukturierte Veranstaltungsdaten aus folgendem Text.
 
-    Wichtig für Tags:
-    - Verwende ALLGEMEINE, WIEDERVERWENDBARE Tags statt zu spezifischer Begriffe
-    - Beschränke dich auf MAXIMAL 5 Tags pro Veranstaltung
-    - Verwende KONSISTENTE TERMINOLOGIE für Konzepte:
-      * Verwende "KI" statt "Künstliche Intelligenz" oder "Artificial Intelligence"
-      * Verwende "DSGVO" statt "Datenschutz-Grundverordnung"
-      * Verwende "NGO" statt "Nichtregierungsorganisation"
-    - WICHTIG: Füge IMMER den Tag "Online" hinzu, wenn die Veranstaltung virtuell stattfindet
-      * Dies gilt für alle Webinare, virtuelle Konferenzen, Online-Workshops, etc.
-      * Der "Online" Tag muss ZUSÄTZLICH zum spezifischen Format-Tag (z.B. "Webinar", "Workshop") hinzugefügt werden
-    - Verwende korrekte Groß-/Kleinschreibung (z.B. "KI" statt "ki")
-    - Formatiere Akronyme korrekt (z.B. "NGO", "DSGVO")
-    - Verwende Title Case für mehrere Wörter (z.B. "Machine Learning")
-    - Füge "Kostenlos" als Tag hinzu, wenn die Veranstaltung kostenlos ist
-    
-    Wichtig für Datumsformate:
-    - Nutze YYYY-MM-DD für Datumsangaben und HH:MM für Zeitangaben
-    - SUCHE INTENSIV nach Datums- und Zeitangaben in allen möglichen deutschen Formaten:
-      * Numerische Formate: "08.04.2025", "8.4.25", "08/04/2025"
-      * Mit Monatsnamen: "8. April 2025", "8.Apr.2025"
-      * Mit Wochentagen: "Montag, 8. April", "Mo, 08.04."
-      * Zeiträume: "8.-10. April", "vom 8. bis 10. April", "30.04.-02.05."
-      * Unvollständige Angaben: "8. April" (ohne Jahr), "April 2025" (nur Monat)
-      * Uhrzeiten: "14:00", "14 Uhr", "14.00 Uhr", "14-16 Uhr", "von 14 bis 16 Uhr"
-      * Kontextangaben: "Einlass 18:30, Beginn 19 Uhr", "vormittags", "abends"
+QUELLE: {source_name}
+{extracted_info}
+LISTING TEXT:
+{listing_text}
 
-    - Standardwerte für ungenaue Zeitangaben:
-      * "Vormittag" → 10:00, "Mittag" → 12:00, "Nachmittag" → 14:00, "Abend" → 19:00
-      * "Ganztägig" → start_time: 09:00, end_time: 17:00
+DETAIL TEXT:
+{detail_text}
 
-    - Prioritätsregeln:
-      * Bei mehreren Zeitangaben: Priorisiere "Beginn", "Start" über "Einlass", "Türöffnung"
-      * Bei widersprüchlichen Daten: Wähle das Datum näher an Zeitangaben
-      * Bei fehlenden Jahren: Verwende aktuelles Jahr, wenn Datum in der Zukunft liegt
-      * Bei Datumsformaten wie 01.02.2025: Interpretiere als Tag.Monat.Jahr (europäisch)
+URL: {url}
 
-    - Beispiele:
-      * "Workshop am Montag, 8. April 2025, 14-16 Uhr"
-        → start_date: "2025-04-08", start_time: "14:00", end_date: "2025-04-08", end_time: "16:00"
-      * "Konferenz vom 8. bis 10. April 2025, täglich 9-17 Uhr"
-        → start_date: "2025-04-08", start_time: "09:00", end_date: "2025-04-10", end_time: "17:00"
-      * "Vortrag am 8.4., Einlass 18:30 Uhr, Beginn 19 Uhr"
-        → start_date: "2025-04-08", start_time: "19:00" (nicht Einlasszeit)
-    
-    Relevanzkriterien für relevancy_score (0-100):
+--- REGELN ---
 
-    HOHE RELEVANZ (70-100 Punkte):
-    - Expliziter Fokus auf Non-Profit-Organisationen (Vereine, Stiftungen, NGOs, gemeinnützige Organisationen)
-    - Klarer Bezug zu digitaler Transformation, Digitalisierung oder IT-Themen
-    - Beide Aspekte (Non-Profit + Digital) sind deutlich erkennbar
-    - Beispiele: "Digitalisierung für Vereine", "IT-Lösungen für gemeinnützige Organisationen"
+DESCRIPTION (max 450 Zeichen):
+Starte DIREKT mit dem inhaltlichen Kern. NICHT wiederholen: Titel, Veranstalter, Format, Datum, Ort.
+Schlecht: "In diesem Webinar der Bitkom Akademie lernen Sie..."
+Gut: "Grundlagen der KI-gestützten Textgenerierung für Öffentlichkeitsarbeit..."
 
-    MITTLERE RELEVANZ (40-69 Punkte):
-    - Indirekter Non-Profit-Bezug (z.B. soziale Innovation, Engagement, bürgerschaftliches Engagement)
-    - Digitale Themen vorhanden, aber Non-Profit-Bezug nicht explizit
-    - Oder: Non-Profit-Bezug vorhanden, aber digitaler Aspekt nur teilweise relevant
+ORGANIZER vs. SPEAKER:
+- organizer = IMMER eine Organisation (Verband, Stiftung, Akademie), NIE eine Person
+- speaker = Referent*in, Dozent*in, Trainer*in (Personennamen)
+- Labels wie "Kontakt:", "Ansprechpartner*in:", "Referent*in:" → speaker, NICHT organizer
+- Keine Organisation im Text → QUELLE als organizer verwenden
+- NIE "Unbekannt" oder "null" als organizer
 
-    NIEDRIGE RELEVANZ (20-39 Punkte):
-    - Schwacher Non-Profit-Bezug oder nur allgemein soziale Themen
-    - Digitale Themen vorhanden, aber für breite Business-Zielgruppe
-    - Kann für Non-Profits interessant sein, aber nicht spezifisch ausgerichtet
+TAGS (max 5, in tag_groups einordnen):
+- Allgemein und wiederverwendbar, nicht zu spezifisch
+- Akronyme: "KI" (nicht "Künstliche Intelligenz"), "DSGVO", "NGO"
+- Title Case: "Machine Learning", "Social Media"
+- "Online" als Tag bei virtuellen Events (zusätzlich zum Format-Tag)
+- "Kostenlos" als Tag wenn kostenlos
 
-    KEINE RELEVANZ (0-19 Punkte):
-    - Reine Business/Unternehmens-Veranstaltungen ohne Non-Profit-Bezug
-    - Fehlender Digitalisierungsbezug
-    - Allgemeine Schulungen ohne spezifischen Non-Profit-Kontext
+DATUM/ZEIT:
+- Format: YYYY-MM-DD / HH:MM. Europäisch: DD.MM.YYYY
+- "Beginn"/"Start" vor "Einlass"/"Türöffnung" priorisieren
+- Fehlendes Jahr → aktuelles Jahr wenn Datum in Zukunft
+- Vage Zeiten: Vormittag→10:00, Mittag→12:00, Nachmittag→14:00, Abend→19:00, Ganztägig→09:00-17:00
 
-    WICHTIG:
-    - Mehrtägige, teure Schulungen (>500€) sollten in der Regel niedrigere Scores erhalten (max. 20-30 Punkte)
-    - Im Zweifelsfall: Eher konservativ bewerten (niedrigerer Score)
+RELEVANCY_SCORE (0-100) — DIGITALISIERUNGS-Kalender für NPOs:
+Primärfrage: Hat die Veranstaltung DIGITALEN/TECHNISCHEN Bezug?
 
-    Liefere nur gültiges JSON zurück. Nutze null für unbekannte Felder.
-    """
+75-100: Digitale Themen + NPO-Bezug (KI für Vereine, Datenschutz für Stiftungen, Social Media für NPOs)
+50-74:  Digitale Themen ohne NPO-Bezug (Prompt Engineering, IT-Sicherheit, E-Rechnung)
+20-49:  Kein digitaler Bezug (Fundraising-Strategie, Inklusion, Sozialpolitik, interne Sitzungen)
+0-19:   Weder digital noch NPO-relevant
+
+Kosten sind KEIN Ausschlusskriterium. Im Zweifel: digital > NPO.
+
+Nutze null für unbekannte Felder."""
     
     def _build_prompt(self, content, extracted_info=None):
         """Build prompt for GPT-4o Mini with extracted information"""
@@ -567,13 +509,14 @@ VALIDATED EXTRACTION:
         listing_text = content.get("listing_text", "") or ""
         detail_text = content.get("detail_text", "") or ""
         url = content.get("url", "")
+        source_name = content.get("source_name", "") or ""
 
         # Less aggressive trimming for texts to preserve more content
         # Increase limits to retain more information while still managing token usage
         if len(listing_text) > 3000:
             listing_text = listing_text[:3000] + "..."
-        if len(detail_text) > 4000:
-            detail_text = detail_text[:4000] + "..."
+        if len(detail_text) > 5000:
+            detail_text = detail_text[:5000] + "..."
 
         # Add pre-extracted information if available
         extracted_info_str = ""
@@ -586,11 +529,12 @@ VALIDATED EXTRACTION:
         # Use the template with format() for better performance than f-strings with large text
         prompt = self._prompt_template.format(
             extracted_info=extracted_info_str,
+            source_name=source_name,
             listing_text=listing_text,
             detail_text=detail_text,
             url=url
         )
-        
+
         return prompt
 
 def process_events(limit=10, batch_size=3):

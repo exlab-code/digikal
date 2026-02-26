@@ -922,13 +922,27 @@ class EventScraper:
                 # Parse the detail page
                 detail_soup = BeautifulSoup(detail_content, 'html.parser', from_encoding='utf-8')
                 detail_element = detail_soup.select_one(source['full_page_selector'])
-                
+
                 if not detail_element:
                     # If selector doesn't match, use the whole body
-                    detail_text = self.normalize_text(detail_soup.body.get_text(strip=True, separator=' '))
+                    target_element = detail_soup.body
                     content_log.write(f"SELECTOR NOT FOUND, USING BODY TEXT\n")
                 else:
-                    detail_text = self.normalize_text(detail_element.get_text(strip=True, separator=' '))
+                    target_element = detail_element
+
+                # Remove noise: forms, scripts, styles, nav elements
+                for tag in target_element.find_all(['form', 'script', 'style', 'noscript', 'nav', 'footer', 'iframe']):
+                    tag.decompose()
+
+                # Use newline separator to preserve label-value structure
+                # (e.g. "Kontakt:\nCharlotte Reichardt" instead of "Kontakt: Charlotte Reichardt Fortbildung...")
+                raw_detail = target_element.get_text(separator='\n')
+                lines = []
+                for line in raw_detail.split('\n'):
+                    cleaned = self.normalize_text(line.strip())
+                    if cleaned:
+                        lines.append(cleaned)
+                detail_text = '\n'.join(lines)
                     
                 content_log.write(f"DETAIL TEXT:\n{detail_text}\n\n")
                 content_log.write("="*80 + "\n\n")

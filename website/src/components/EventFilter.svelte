@@ -163,7 +163,8 @@
     updateFilters({
       tags: selectedTags,
       onlineOnly: onlineOnly,
-      timeHorizon: selectedTimeHorizon
+      timeHorizon: selectedTimeHorizon,
+      selectedMonth: null  // clear month when other filters change
     });
   }
 
@@ -171,7 +172,12 @@
     selectedTags = [];
     onlineOnly = false;
     selectedTimeHorizon = 'all';
-    applyFilters();
+    updateFilters({
+      tags: [],
+      onlineOnly: false,
+      timeHorizon: 'all',
+      selectedMonth: null
+    });
     trackEvent('filter_clear');
   }
 

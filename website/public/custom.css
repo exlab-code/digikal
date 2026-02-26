@@ -144,6 +144,40 @@
   }
 }
 
+/* Month pill filter */
+.month-pill {
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.month-pill:hover {
+  border-color: #3178ff;
+  color: #3178ff;
+}
+
+.month-pill.selected {
+  background-color: #3178ff;
+  border-color: #3178ff;
+  color: white;
+}
+
+.month-pill-count {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-left: 0.15rem;
+}
+
+.month-pill.selected .month-pill-count {
+  opacity: 0.85;
+}
+
 /* Tag styling */
 .tag {
   padding: 0.2rem 0.6rem;

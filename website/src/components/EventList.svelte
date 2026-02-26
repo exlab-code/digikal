@@ -1,8 +1,9 @@
 <script>
   import { onMount } from 'svelte';
-  import { filteredEvents, isLoading, error, filters } from '../stores/eventStore';
+  import { filteredEvents, isLoading, error, filters, availableMonths, updateFilters } from '../stores/eventStore';
   import EventCard from './EventCard.svelte';
   import { getCategoryName } from '../categoryMappings';
+  import { trackEvent } from '../services/analytics';
 
   let filterDescription = '';
 
@@ -18,6 +19,12 @@
     } else {
       filterDescription = '';
     }
+  }
+
+  function selectMonth(monthKey) {
+    const newValue = $filters.selectedMonth === monthKey ? null : monthKey;
+    updateFilters({ selectedMonth: newValue, timeHorizon: 'all' });
+    trackEvent('filter_change', { selectedMonth: newValue });
   }
 </script>
 
@@ -50,14 +57,33 @@
       {/if}
     </div>
   {:else}
-    <div class="mb-6 space-y-2">
-      <h2 class="text-2xl font-bold py-3 text-gray-800">📆 Bevorstehende Veranstaltungen</h2>
-      {#if filterDescription}
-        <div class="inline-block bg-blue-50 px-3 py-1 rounded-full text-sm text-blue-800">
-          🔍 {filterDescription}
+    <div class="mb-6 space-y-3">
+      <!-- Month pills -->
+      {#if $availableMonths.length > 1}
+        <div class="flex flex-wrap gap-1.5">
+          <button
+            class="month-pill {$filters.selectedMonth === null ? 'selected' : ''}"
+            on:click={() => selectMonth(null)}
+          >
+            Alle
+          </button>
+          {#each $availableMonths as month}
+            <button
+              class="month-pill {$filters.selectedMonth === month.key ? 'selected' : ''}"
+              on:click={() => selectMonth(month.key)}
+            >
+              {month.label} <span class="month-pill-count">{month.count}</span>
+            </button>
+          {/each}
         </div>
       {/if}
-      <p class="text-gray-500 text-sm">{$filteredEvents.length} Veranstaltungen gefunden</p>
+
+      {#if filterDescription}
+        <div class="inline-block bg-blue-50 px-3 py-1 rounded-full text-sm text-blue-800">
+          {filterDescription}
+        </div>
+      {/if}
+      <p class="text-gray-500 text-sm">{$filteredEvents.length} Veranstaltungen</p>
     </div>
 
     <div class="space-y-6">

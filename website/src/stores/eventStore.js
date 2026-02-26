@@ -6,11 +6,12 @@ export const events = writable([]);
 export const categories = writable([]);
 export const tags = writable([]);
 export const calendarUrls = writable({ nextcloud: '', ical: '' });
-export const filters = writable({ 
+export const filters = writable({
   category: '',
   tags: [],
   onlineOnly: false,
-  timeHorizon: 'all'
+  timeHorizon: 'all',
+  selectedMonth: null  // e.g. "2026-03" or null for all
 });
 export const isLoading = writable(false);
 export const error = writable(null);
@@ -155,6 +156,13 @@ export const filteredEvents = derived(
         }
       }
       
+      // Filter by selected month
+      if ($filters.selectedMonth) {
+        const eventDate = new Date(event.start_date);
+        const eventMonth = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`;
+        if (eventMonth !== $filters.selectedMonth) return false;
+      }
+
       // Filter by time horizon
       if ($filters.timeHorizon && $filters.timeHorizon !== 'all') {
         try {
@@ -261,6 +269,35 @@ export async function initializeData() {
     loadCalendarUrls()
   ]);
 }
+
+// Available months from future events (for month pill filter)
+const MONTH_NAMES_DE = ['Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+export const availableMonths = derived(events, $events => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const monthMap = new Map(); // key: "2026-03", value: { label: "Mrz 2026", count: 5 }
+
+  for (const event of $events) {
+    if (!event.start_date) continue;
+    const d = new Date(event.start_date);
+    const eventDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if (eventDay < today) continue;
+
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (monthMap.has(key)) {
+      monthMap.get(key).count++;
+    } else {
+      monthMap.set(key, {
+        key,
+        label: `${MONTH_NAMES_DE[d.getMonth()]} ${d.getFullYear()}`,
+        count: 1
+      });
+    }
+  }
+
+  return Array.from(monthMap.values()).sort((a, b) => a.key.localeCompare(b.key));
+});
 
 export const topTags = derived(events, $events => {
   const tagCounts = {};
