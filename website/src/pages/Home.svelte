@@ -3,7 +3,6 @@
   import EventList from '../components/EventList.svelte';
   import EventFilter from '../components/EventFilter.svelte';
   import NewsletterSignup from '../components/NewsletterSignup.svelte';
-  import AboutSection from '../components/AboutSection.svelte';
   import { initializeData } from '../stores/eventStore';
 
   onMount(() => {
@@ -19,7 +18,6 @@
     <aside class="lg:col-span-1 space-y-6">
       <NewsletterSignup />
       <EventFilter defaultOpen={true} />
-      <AboutSection defaultOpen={false} />
     </aside>
 
     <div class="lg:col-span-3">
