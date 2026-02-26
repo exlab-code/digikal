@@ -1,9 +1,8 @@
 <script>
   import { onMount } from 'svelte';
-  import { filteredEvents, isLoading, error, filters, availableMonths, updateFilters } from '../stores/eventStore';
+  import { filteredEvents, isLoading, error, filters } from '../stores/eventStore';
   import EventCard from './EventCard.svelte';
   import { getCategoryName } from '../categoryMappings';
-  import { trackEvent } from '../services/analytics';
 
   let filterDescription = '';
 
@@ -12,19 +11,12 @@
     const parts = [];
     if ($filters.category) parts.push(`Kategorie "${getCategoryName($filters.category)}"`);
     if ($filters.tags && $filters.tags.length > 0) parts.push($filters.tags.join(', '));
-    if ($filters.timeHorizon && $filters.timeHorizon !== 'all') parts.push(`Zeitraum`);
 
     if (parts.length > 0) {
       filterDescription = `Gefiltert nach: ${parts.join(' + ')}`;
     } else {
       filterDescription = '';
     }
-  }
-
-  function selectMonth(monthKey) {
-    const newValue = $filters.selectedMonth === monthKey ? null : monthKey;
-    updateFilters({ selectedMonth: newValue, timeHorizon: 'all' });
-    trackEvent('filter_change', { selectedMonth: newValue });
   }
 </script>
 
@@ -57,27 +49,7 @@
       {/if}
     </div>
   {:else}
-    <div class="mb-6 space-y-3">
-      <!-- Month pills -->
-      {#if $availableMonths.length > 1}
-        <div class="flex flex-wrap gap-1.5">
-          <button
-            class="month-pill {$filters.selectedMonth === null ? 'selected' : ''}"
-            on:click={() => selectMonth(null)}
-          >
-            Alle
-          </button>
-          {#each $availableMonths as month}
-            <button
-              class="month-pill {$filters.selectedMonth === month.key ? 'selected' : ''}"
-              on:click={() => selectMonth(month.key)}
-            >
-              {month.label} <span class="month-pill-count">{month.count}</span>
-            </button>
-          {/each}
-        </div>
-      {/if}
-
+    <div class="mb-6 space-y-2">
       {#if filterDescription}
         <div class="inline-block bg-blue-50 px-3 py-1 rounded-full text-sm text-blue-800">
           {filterDescription}

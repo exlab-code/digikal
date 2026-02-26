@@ -1,13 +1,12 @@
 <script>
   import { onMount } from 'svelte';
-  import { events, filters, updateFilters } from '../stores/eventStore';
+  import { events, filters, updateFilters, availableMonths } from '../stores/eventStore';
   import Tag from './Tag.svelte';
   import Accordion from './Accordion.svelte';
   import { trackEvent } from '../services/analytics';
 
   let selectedTags = [];
   let onlineOnly = false;
-  let selectedTimeHorizon = 'all'; // Default to 'all'
   let isFilterOpen = false; // Default closed on mobile
   let tagFrequency = {};
   let groupedTags = {
@@ -16,22 +15,6 @@
     "audience": [],
     "cost": []
   };
-
-  // Initialize tag frequency and grouped tags on mount
-  onMount(() => {
-    calculateTagFrequency($events);
-    groupedTags = getGroupedTags($events);
-  });
-
-  // Time horizon options
-  const timeHorizons = [
-    { value: 'all', label: 'Alle Termine' },
-    { value: 'today', label: 'Heute' },
-    { value: 'thisWeek', label: 'Diese Woche' },
-    { value: 'thisMonth', label: 'Diesen Monat' },
-    { value: 'nextMonth', label: 'Nächsten Monat' },
-    { value: 'next3Months', label: 'Nächste 3 Monate' }
-  ];
 
   // Tag group names
   const tagGroupNames = {
@@ -45,17 +28,19 @@
   filters.subscribe(f => {
     selectedTags = f.tags ? [...f.tags] : [];
     onlineOnly = f.onlineOnly || false;
-    selectedTimeHorizon = f.timeHorizon || 'all';
+  });
+
+  // Initialize tag frequency and grouped tags on mount
+  onMount(() => {
+    calculateTagFrequency($events);
+    groupedTags = getGroupedTags($events);
   });
 
   // Set minimum tag frequency
   const minTagFrequency = 3; // Only show tags that appear in at least 3 events
 
-  // Update tag frequency based on what would be visible WITHOUT the current tag/time filters
-  // This ensures tag counts reflect "future events only" but ignore active tag/time filters
+  // Update tag frequency based on future events only
   $: if ($events && $events.length > 0) {
-    // Calculate frequency from events that pass the date filter (future events)
-    // by temporarily using events with only the date filtering applied
     const futureEventsOnly = $events.filter(event => {
       if (!event.start_date) return false;
       const now = new Date();
@@ -132,57 +117,31 @@
       selectedTags = [...selectedTags, tag];
     }
     applyFilters();
-    trackEvent('filter_change', {
-      tags: selectedTags,
-      onlineOnly,
-      timeHorizon: selectedTimeHorizon
-    });
+    trackEvent('filter_change', { tags: selectedTags, onlineOnly });
   }
 
-  function toggleOnlineOnly() {
-    onlineOnly = !onlineOnly;
-    applyFilters();
-    trackEvent('filter_change', {
-      tags: selectedTags,
-      onlineOnly,
-      timeHorizon: selectedTimeHorizon
-    });
-  }
-
-  function selectTimeHorizon(horizon) {
-    selectedTimeHorizon = horizon;
-    applyFilters();
-    trackEvent('filter_change', {
-      tags: selectedTags,
-      onlineOnly,
-      timeHorizon: selectedTimeHorizon
-    });
+  function selectMonth(monthKey) {
+    const newValue = $filters.selectedMonth === monthKey ? null : monthKey;
+    updateFilters({ selectedMonth: newValue });
+    trackEvent('filter_change', { selectedMonth: newValue });
   }
 
   function applyFilters() {
     updateFilters({
       tags: selectedTags,
-      onlineOnly: onlineOnly,
-      timeHorizon: selectedTimeHorizon,
-      selectedMonth: null  // clear month when other filters change
+      onlineOnly: onlineOnly
     });
   }
 
   function clearFilters() {
     selectedTags = [];
     onlineOnly = false;
-    selectedTimeHorizon = 'all';
     updateFilters({
       tags: [],
       onlineOnly: false,
-      timeHorizon: 'all',
       selectedMonth: null
     });
     trackEvent('filter_clear');
-  }
-
-  function toggleFilterPanel() {
-    isFilterOpen = !isFilterOpen;
   }
 </script>
 
@@ -215,39 +174,28 @@
       {/if}
     {/each}
     
-    <!-- {#if selectedTags.length > 0}
-      <div class="mt-2 mb-4 text-sm text-gray-500">
-        Zeige Events mit ALLEN ausgewählten Tags (AND-Logik)
-      </div>
-    {/if} -->
-
-    <!-- Time Horizon Selection -->
-    <div class="tag-group mb-4">
-      <h3 class="tag-group-title">Zeitraum</h3>
-      <div class="flex flex-wrap gap-1">
-        {#each timeHorizons as horizon}
+    <!-- Month filter -->
+    {#if $availableMonths.length > 1}
+      <div class="tag-group mb-4">
+        <h3 class="tag-group-title">Monat</h3>
+        <div class="flex flex-wrap gap-1.5">
           <button
-            class="tag {selectedTimeHorizon === horizon.value ? 'selected' : ''} selectable"
-            on:click={() => selectTimeHorizon(horizon.value)}
+            class="month-pill {$filters.selectedMonth === null ? 'selected' : ''}"
+            on:click={() => selectMonth(null)}
           >
-            {horizon.label}
+            Alle
           </button>
-        {/each}
+          {#each $availableMonths as month}
+            <button
+              class="month-pill {$filters.selectedMonth === month.key ? 'selected' : ''}"
+              on:click={() => selectMonth(month.key)}
+            >
+              {month.label} <span class="month-pill-count">{month.count}</span>
+            </button>
+          {/each}
+        </div>
       </div>
-    </div>
-
-    <!-- Online Only Filter -->
-    <!-- <div class="mb-4">
-      <label class="inline-flex items-center cursor-pointer">
-        <input 
-          type="checkbox" 
-          class="form-checkbox h-4 w-4 text-primary-600 rounded" 
-          bind:checked={onlineOnly}
-          on:change={applyFilters}
-        />
-        <span class="ml-2 text-sm text-gray-700">Nur Online-Veranstaltungen</span>
-      </label>
-    </div> -->
+    {/if}
 
     <!-- Filter Actions -->
     <div class="flex gap-1 flex-wrap">
@@ -255,7 +203,7 @@
         type="button" 
         class="flex justify-center items-center px-4 py-2 border border-gray-300 text-sm rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         on:click={clearFilters}
-        disabled={selectedTags.length === 0 && !onlineOnly && selectedTimeHorizon === 'all'}
+        disabled={selectedTags.length === 0 && !onlineOnly && !$filters.selectedMonth}
       >
         <!-- <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />

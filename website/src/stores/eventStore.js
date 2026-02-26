@@ -10,96 +10,10 @@ export const filters = writable({
   category: '',
   tags: [],
   onlineOnly: false,
-  timeHorizon: 'all',
   selectedMonth: null  // e.g. "2026-03" or null for all
 });
 export const isLoading = writable(false);
 export const error = writable(null);
-
-// Helper function to get date ranges based on time horizon
-function getDateRangeFromTimeHorizon(timeHorizon) {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
-  switch(timeHorizon) {
-    case 'today':
-      return {
-        start: today,
-        end: new Date(today.getTime() + 24 * 60 * 60 * 1000) // end of today
-      };
-      
-    case 'thisWeek': {
-      // Start of week (Monday)
-      const dayOfWeek = today.getDay();
-      const startOfWeek = new Date(today);
-      const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Adjust for Sunday
-      startOfWeek.setDate(today.getDate() - diff);
-      
-      // End of week (Sunday)
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
-      
-      return { start: startOfWeek, end: endOfWeek };
-    }
-    
-    case 'nextWeek': {
-      // Start of next week (next Monday)
-      const dayOfWeek = today.getDay();
-      const startOfNextWeek = new Date(today);
-      const diff = dayOfWeek === 0 ? 1 : 8 - dayOfWeek; // Adjust for Sunday
-      startOfNextWeek.setDate(today.getDate() + diff);
-      
-      // End of next week (next Sunday)
-      const endOfNextWeek = new Date(startOfNextWeek);
-      endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
-      
-      return { start: startOfNextWeek, end: endOfNextWeek };
-    }
-    
-    case 'thisMonth': {
-      // Start of month
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      
-      // End of month
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      
-      return { start: startOfMonth, end: endOfMonth };
-    }
-    
-    case 'nextMonth': {
-      // Start of next month
-      const startOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-      
-      // End of next month
-      const endOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0);
-      
-      return { start: startOfNextMonth, end: endOfNextMonth };
-    }
-    
-    case 'next3Months': {
-      // Start of today
-      
-      // End of 3 months from today
-      const endOf3Months = new Date(today);
-      endOf3Months.setMonth(today.getMonth() + 3);
-      
-      return { start: today, end: endOf3Months };
-    }
-    
-    case 'upcoming': {
-      // Next 7 days
-      const endDate = new Date(today);
-      endDate.setDate(today.getDate() + 7);
-      
-      return { start: today, end: endDate };
-    }
-    
-    case 'all':
-    default:
-      // No date filtering
-      return { start: null, end: null };
-  }
-}
 
 // Derived store for filtered events
 export const filteredEvents = derived(
@@ -163,29 +77,6 @@ export const filteredEvents = derived(
         if (eventMonth !== $filters.selectedMonth) return false;
       }
 
-      // Filter by time horizon
-      if ($filters.timeHorizon && $filters.timeHorizon !== 'all') {
-        try {
-          const dateRange = getDateRangeFromTimeHorizon($filters.timeHorizon);
-          if (dateRange.start || dateRange.end) {
-            const eventDate = new Date(event.start_date);
-            
-            // Filter out events before the start date
-            if (dateRange.start && eventDate < dateRange.start) {
-              return false;
-            }
-            
-            // Filter out events after the end date
-            if (dateRange.end && eventDate > dateRange.end) {
-              return false;
-            }
-          }
-        } catch (err) {
-          console.error('Fehler beim Filtern nach Zeitraum:', err, event.start_date);
-          // If we can't parse the date, include the event to be safe
-        }
-      }
-      
       return true;
     });
   }
