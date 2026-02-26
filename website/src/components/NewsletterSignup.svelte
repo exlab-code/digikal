@@ -5,40 +5,18 @@
 
   let email = '';
   let status = 'idle'; // idle | submitting | success | error
-  let errorMessage = '';
   let copySuccess = false;
   let copyTimeout;
 
-  async function handleSubmit() {
+  function handleSubmit() {
     if (!email) return;
     status = 'submitting';
-
-    try {
-      const res = await fetch('https://listmonk.buerofalk.de/api/public/subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          name: '',
-          list_uuids: ['c8997035-384b-4a40-aa92-939e978ad46f']
-        })
-      });
-
-      if (res.ok) {
-        status = 'success';
-        email = '';
-        trackEvent('newsletter_signup');
-      } else {
-        const data = await res.json().catch(() => ({}));
-        status = 'error';
-        errorMessage = data.message || 'Anmeldung fehlgeschlagen. Bitte versuche es später erneut.';
-      }
-    } catch {
-      status = 'error';
-      errorMessage = 'Netzwerkfehler. Bitte prüfe deine Internetverbindung.';
-    }
+    trackEvent('newsletter_signup');
+    // Small delay to let the native form submit to the iframe
+    setTimeout(() => {
+      status = 'success';
+      email = '';
+    }, 1000);
   }
 
   function copyToClipboard(url) {
@@ -67,9 +45,18 @@
     {:else}
       <p class="text-gray-600 mb-3 text-sm">Monatliche Übersicht der wichtigsten Veranstaltungen per E-Mail.</p>
 
-      <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-2">
+      <iframe name="listmonk-frame" style="display:none;"></iframe>
+      <form
+        method="post"
+        action="https://listmonk.buerofalk.de/subscription/form"
+        target="listmonk-frame"
+        on:submit={handleSubmit}
+        class="flex flex-col gap-2"
+      >
+        <input type="hidden" name="l" value="c8997035-384b-4a40-aa92-939e978ad46f" />
         <input
           type="email"
+          name="email"
           bind:value={email}
           placeholder="E-Mail-Adresse"
           required
@@ -83,10 +70,6 @@
           {status === 'submitting' ? 'Wird gesendet...' : 'Per E-Mail abonnieren'}
         </button>
       </form>
-
-      {#if status === 'error'}
-        <p class="mt-2 text-sm text-red-600">{errorMessage}</p>
-      {/if}
     {/if}
 
     {#if $calendarUrls.nextcloud}
