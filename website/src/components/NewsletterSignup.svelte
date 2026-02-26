@@ -6,24 +6,42 @@
   let email = '';
   let honeypot = '';
   let status = 'idle'; // idle | submitting | success | error
+  let errorMsg = '';
   let copySuccess = false;
   let copyTimeout;
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
+    e.preventDefault();
     if (!email) return;
     // Honeypot: bots fill hidden fields, humans don't
     if (honeypot) {
-      e.preventDefault();
-      status = 'success'; // Fake success for bots
+      status = 'success';
       return;
     }
     status = 'submitting';
-    trackEvent('newsletter_signup');
-    // Small delay to let the native form submit to the iframe
-    setTimeout(() => {
-      status = 'success';
-      email = '';
-    }, 1000);
+    errorMsg = '';
+    try {
+      const resp = await fetch('https://listmonk.buerofalk.de/api/public/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          list_uuids: ['c8997035-384b-4a40-aa92-939e978ad46f'],
+        }),
+      });
+      if (resp.ok) {
+        status = 'success';
+        email = '';
+        trackEvent('newsletter_signup');
+      } else {
+        const data = await resp.json().catch(() => null);
+        errorMsg = data?.message || 'Anmeldung fehlgeschlagen. Bitte versuche es erneut.';
+        status = 'error';
+      }
+    } catch {
+      errorMsg = 'Netzwerkfehler. Bitte prüfe deine Internetverbindung.';
+      status = 'error';
+    }
   }
 
   function copyToClipboard(url) {
@@ -48,24 +66,19 @@
     id="newsletter"
   >
     {#if status === 'success'}
-      <p class="text-sm text-green-700">Danke! Bitte prüfe dein Postfach und bestätige die Anmeldung.</p>
+      <p class="text-sm text-green-700">Danke! Du bist jetzt für den Newsletter angemeldet.</p>
     {:else}
       <p class="text-gray-600 mb-3 text-sm">Monatliche Übersicht der wichtigsten Veranstaltungen per E-Mail.</p>
 
-      <iframe name="listmonk-frame" style="display:none;"></iframe>
-      <form
-        method="post"
-        action="https://listmonk.buerofalk.de/subscription/form"
-        target="listmonk-frame"
-        on:submit={handleSubmit}
-        class="flex flex-col gap-2"
-      >
-        <input type="hidden" name="l" value="c8997035-384b-4a40-aa92-939e978ad46f" />
+      {#if status === 'error'}
+        <p class="text-sm text-red-600 mb-2">{errorMsg}</p>
+      {/if}
+
+      <form on:submit={handleSubmit} class="flex flex-col gap-2">
         <!-- Honeypot: invisible to humans, bots fill it -->
         <input type="text" name="website_url" bind:value={honeypot} style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" tabindex="-1" autocomplete="off" />
         <input
           type="email"
-          name="email"
           bind:value={email}
           placeholder="E-Mail-Adresse"
           required
