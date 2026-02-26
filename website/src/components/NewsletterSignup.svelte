@@ -14,24 +14,26 @@
     status = 'submitting';
 
     try {
-      const res = await fetch('https://formsubmit.co/ajax/dc38e2e986e2200a506c104edc62ddd0', {
+      const res = await fetch('https://listmonk.buerofalk.de/api/public/subscription', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           email,
-          _subject: 'Neue Newsletter-Anmeldung (digikal Kalender)'
+          name: '',
+          list_uuids: ['c8997035-384b-4a40-aa92-939e978ad46f']
         })
       });
 
       if (res.ok) {
         status = 'success';
         email = '';
+        trackEvent('newsletter_signup');
       } else {
+        const data = await res.json().catch(() => ({}));
         status = 'error';
-        errorMessage = 'Anmeldung fehlgeschlagen. Bitte versuche es später erneut.';
+        errorMessage = data.message || 'Anmeldung fehlgeschlagen. Bitte versuche es später erneut.';
       }
     } catch {
       status = 'error';
@@ -61,7 +63,7 @@
     id="newsletter"
   >
     {#if status === 'success'}
-      <p class="text-sm text-green-700">Danke! Bitte bestätige deine E-Mail-Adresse.</p>
+      <p class="text-sm text-green-700">Danke! Bitte prüfe dein Postfach und bestätige die Anmeldung.</p>
     {:else}
       <p class="text-gray-600 mb-3 text-sm">Monatliche Übersicht der wichtigsten Veranstaltungen per E-Mail.</p>
 

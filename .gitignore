@@ -16,6 +16,7 @@ foerdermittel/
 
 # Draft documents
 linkedin-post*.md
+newsletter_*.html
 
 # Credentials (any depth)
 **/directus.json
