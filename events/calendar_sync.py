@@ -4,6 +4,7 @@ import caldav
 from icalendar import Calendar, Event
 from datetime import datetime, timedelta
 import dateutil.parser
+from dateutil import tz
 import logging
 import time
 import json
@@ -77,10 +78,10 @@ def get_directus_events(approved_only=True):
             }
         }
     
-    params = {}
+    params = {"limit": -1}
     if filter_params:
         params["filter"] = json.dumps(filter_params)
-    
+
     try:
         response = requests.get(f"{directus_config['url']}/items/events", headers=headers, params=params)
         response.raise_for_status()
@@ -328,8 +329,12 @@ def sync_directus_to_nextcloud():
                 logger.error(f"Event {title} has no start_date, skipping")
                 continue
                 
+            BERLIN = tz.gettz('Europe/Berlin')
             start_date = dateutil.parser.parse(event['start_date'])
-            
+            # Attach Berlin timezone if naive
+            if start_date.tzinfo is None:
+                start_date = start_date.replace(tzinfo=BERLIN)
+
             # For end_date, use start_date as fallback if end_date is None or missing
             end_date_value = event.get('end_date')
             if end_date_value is None:
@@ -339,11 +344,13 @@ def sync_directus_to_nextcloud():
             else:
                 try:
                     end_date = dateutil.parser.parse(end_date_value)
+                    if end_date.tzinfo is None:
+                        end_date = end_date.replace(tzinfo=BERLIN)
                 except (TypeError, ValueError) as e:
                     # If end_date parsing fails, default to 1 hour event
                     logger.warning(f"Could not parse end_date for event {title}: {str(e)}, defaulting to 1 hour duration")
                     end_date = start_date + timedelta(hours=1)
-                    
+
             # Ensure end_date is not None
             if end_date is None:
                 end_date = start_date + timedelta(hours=1)

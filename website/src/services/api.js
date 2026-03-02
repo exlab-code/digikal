@@ -161,7 +161,7 @@ export async function getTags() {
 export async function getCalendarUrls() {
   // Return hardcoded URLs for the Nextcloud calendar and local iCal download
   return {
-    nextcloud: "https://cloud.buerofalk.de/remote.php/dav/public-calendars/AnaLz2YHKjM6EF7k?export",
+    nextcloud: "https://cloud.buerofalk.de/remote.php/dav/public-calendars/P3JABC3Rt87rzR9T?export",
     ical: "/calendar.ics"
   };
 }
