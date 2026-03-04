@@ -1,5 +1,5 @@
 // Directus API configuration
-const DIRECTUS_TOKEN = "APpU898yct7V2VyMFfcJse_7WXktDY-o";
+const DIRECTUS_TOKEN = "IXya-sE0fEPTKsHDqYLy7acTyilIpUdC";
 
 // Use direct Directus API URL for GitHub Pages deployment
 const DIRECTUS_URL = "https://calapi.buerofalk.de";

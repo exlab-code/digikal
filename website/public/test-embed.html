@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DigiKal Embed Test – WordPress Simulation</title>
+  <style>
+    /* Simulate aggressive WordPress/Elementor styles to test Shadow DOM isolation */
+    * { font-family: "Comic Sans MS", cursive !important; color: purple !important; }
+    h2 { font-size: 3rem !important; text-transform: uppercase !important; }
+    select { background: red !important; color: yellow !important; border: 5px dotted green !important; }
+    a { color: hotpink !important; text-decoration: line-through !important; }
+    div { border: none; }
+    button { background: orange !important; font-size: 2rem !important; }
+
+    /* Page layout */
+    body {
+      font-family: Arial, sans-serif !important;
+      color: #333 !important;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .page-header {
+      background: #2d3748;
+      color: white !important;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    .page-header h1 { color: white !important; font-family: Arial, sans-serif !important; font-size: 1.5rem !important; text-transform: none !important; }
+    .page-header p { color: #cbd5e0 !important; font-family: Arial, sans-serif !important; }
+    .test-section {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .test-section h3 { font-family: Arial, sans-serif !important; color: #2d3748 !important; font-size: 1.1rem !important; text-transform: none !important; margin-bottom: 12px; }
+    .test-section p { font-family: Arial, sans-serif !important; color: #718096 !important; font-size: 0.9rem; margin-bottom: 16px; }
+    code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-family: monospace !important; color: #e53e3e !important; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1>DigiKal Embed Widget – Test Page</h1>
+    <p>This page simulates a WordPress site with aggressive global styles to verify Shadow DOM isolation.</p>
+  </div>
+
+  <div class="test-section">
+    <h3>Test 1: Default (10 events, filters visible)</h3>
+    <p>Usage: <code>&lt;div id="digikal-events"&gt;&lt;/div&gt;</code></p>
+    <div id="digikal-events"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>Test 2: Custom count, pre-filtered category, no filters</h3>
+    <p>Usage: <code>&lt;div id="digikal-events" data-count="3" data-category="ki_nonprofit" data-show-filters="false"&gt;&lt;/div&gt;</code></p>
+    <p><em>Note: Only the first <code>#digikal-events</code> element is initialized by the embed script. This section shows the intended config for manual testing – change the attributes on Test 1 above to try different configs.</em></p>
+  </div>
+
+  <script src="embed.js"></script>
+</body>
+</html>
