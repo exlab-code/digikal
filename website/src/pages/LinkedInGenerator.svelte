@@ -164,7 +164,8 @@
       }
     }
 
-    text += `\n\n\n---\n\n\n`;
+    text += `\n\n\nWer sollte das sehen? Markiert Kolleg:innen, die das interessieren könnte! Und mit wem würdet ihr gerne eine Veranstaltung besuchen? Schreibt es in die Kommentare.\n\n`;
+    text += `---\n\n`;
     text += `Alle Veranstaltungen, Kalender-Abo und Förderprogramme für Nonprofits:\n`;
     text += `https://digikal.org\n\n`;
     text += `#nonprofit #digitalisierung #ehrenamt #ngos #weiterbildung`;

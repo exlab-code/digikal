@@ -6,18 +6,6 @@
   var API_TOKEN = 'IXya-sE0fEPTKsHDqYLy7acTyilIpUdC';
   var DIGIKAL_URL = 'https://digikal.org';
 
-  var CATEGORY_MAP = {
-    datenschutz_sicherheit: 'Datenschutz & Sicherheit',
-    ki_nonprofit: 'KI für Non-Profits',
-    digitale_kommunikation: 'Digitale Kommunikation & Social Media',
-    foerderung_finanzierung: 'Förderprogramme & Finanzierung',
-    ehrenamt_engagement: 'Ehrenamt & Engagemententwicklung',
-    daten_projektmanagement: 'Daten & Projektmanagement',
-    weiterbildung_qualifizierung: 'Weiterbildung & Qualifizierung',
-    digitale_transformation: 'Digitale Transformation & Strategie',
-    tools_anwendungen: 'Tools & Anwendungen'
-  };
-
   var MONTH_NAMES = ['Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
   var MONTH_NAMES_LONG = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 
@@ -118,7 +106,8 @@
       margin-bottom: 8px;
     }
 
-    /* Category tag */
+    /* Topic tags */
+    .dk-topics { display: flex; flex-wrap: wrap; gap: 4px; }
     .dk-category {
       display: inline-block;
       font-size: 0.7rem;
@@ -203,10 +192,6 @@
   };
 
   // === Helpers ===
-  function getCategoryName(id) {
-    return id ? (CATEGORY_MAP[id] || id) : '';
-  }
-
   function extractTime(dateStr) {
     if (!dateStr || dateStr.indexOf('T') === -1) return null;
     var d = new Date(dateStr);
@@ -240,14 +225,14 @@
   function DigiKalEmbed(container) {
     this.container = container;
     this.count = parseInt(container.getAttribute('data-count'), 10) || 10;
-    this.preCategory = container.getAttribute('data-category') || '';
+    this.preTopic = container.getAttribute('data-topic') || '';
     this.showFilters = container.getAttribute('data-show-filters') !== 'false';
 
     this.allEvents = [];
     this.filteredEvents = [];
     this.visibleCount = this.count;
     this.selectedMonth = '';
-    this.selectedCategory = this.preCategory;
+    this.selectedTopic = this.preTopic;
 
     this.shadow = container.attachShadow({ mode: 'open' });
     var style = document.createElement('style');
@@ -292,13 +277,16 @@
     var now = new Date();
     now.setHours(0, 0, 0, 0);
     var selMonth = this.selectedMonth;
-    var selCat = this.selectedCategory;
+    var selTopic = this.selectedTopic;
 
     this.filteredEvents = this.allEvents.filter(function(ev) {
       var start = new Date(ev.start_date);
       if (start < now) return false;
       if (selMonth && getMonthKey(start) !== selMonth) return false;
-      if (selCat && ev.category !== selCat) return false;
+      if (selTopic) {
+        var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
+        if (topics.indexOf(selTopic) === -1) return false;
+      }
       return true;
     });
   };
@@ -307,12 +295,15 @@
     var now = new Date();
     now.setHours(0, 0, 0, 0);
     var counts = {};
-    var selCat = this.selectedCategory;
+    var selTopic = this.selectedTopic;
 
     this.allEvents.forEach(function(ev) {
       var start = new Date(ev.start_date);
       if (start < now) return;
-      if (selCat && ev.category !== selCat) return;
+      if (selTopic) {
+        var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
+        if (topics.indexOf(selTopic) === -1) return;
+      }
       var key = getMonthKey(start);
       counts[key] = (counts[key] || 0) + 1;
     });
@@ -324,7 +315,7 @@
     });
   };
 
-  DigiKalEmbed.prototype.getAvailableCategories = function() {
+  DigiKalEmbed.prototype.getAvailableTopics = function() {
     var now = new Date();
     now.setHours(0, 0, 0, 0);
     var counts = {};
@@ -334,15 +325,16 @@
       var start = new Date(ev.start_date);
       if (start < now) return;
       if (selMonth && getMonthKey(start) !== selMonth) return;
-      if (ev.category) {
-        counts[ev.category] = (counts[ev.category] || 0) + 1;
-      }
+      var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
+      topics.forEach(function(t) {
+        counts[t] = (counts[t] || 0) + 1;
+      });
     });
 
     return Object.keys(counts).sort(function(a, b) {
-      return getCategoryName(a).localeCompare(getCategoryName(b));
+      return a.localeCompare(b);
     }).map(function(key) {
-      return { key: key, label: getCategoryName(key), count: counts[key] };
+      return { key: key, label: key, count: counts[key] };
     });
   };
 
@@ -359,7 +351,7 @@
     // Filters
     if (this.showFilters) {
       var months = this.getAvailableMonths();
-      var cats = this.getAvailableCategories();
+      var topics = this.getAvailableTopics();
 
       html += '<div class="dk-filters">';
 
@@ -371,12 +363,12 @@
       });
       html += '</select>';
 
-      // Category dropdown (only if no pre-filter set)
-      if (!this.preCategory) {
-        html += '<select class="dk-select" data-filter="category">';
-        html += '<option value="">Alle Kategorien</option>';
-        cats.forEach(function(c) {
-          html += '<option value="' + c.key + '"' + (self.selectedCategory === c.key ? ' selected' : '') + '>' + escapeHtml(c.label) + ' (' + c.count + ')</option>';
+      // Topic dropdown (only if no pre-filter set)
+      if (!this.preTopic) {
+        html += '<select class="dk-select" data-filter="topic">';
+        html += '<option value="">Alle Themen</option>';
+        topics.forEach(function(t) {
+          html += '<option value="' + escapeHtml(t.key) + '"' + (self.selectedTopic === t.key ? ' selected' : '') + '>' + escapeHtml(t.label) + ' (' + t.count + ')</option>';
         });
         html += '</select>';
       }
@@ -421,10 +413,10 @@
       });
     }
 
-    var catSelect = this.root.querySelector('[data-filter="category"]');
-    if (catSelect) {
-      catSelect.addEventListener('change', function() {
-        self.selectedCategory = this.value;
+    var topicSelect = this.root.querySelector('[data-filter="topic"]');
+    if (topicSelect) {
+      topicSelect.addEventListener('change', function() {
+        self.selectedTopic = this.value;
         self.visibleCount = self.count;
         self.filterEvents();
         self.render();
@@ -447,7 +439,7 @@
     var startTime = extractTime(ev.start_date);
     var endTime = extractTime(ev.end_date);
     var cost = formatCost(ev.cost);
-    var catName = getCategoryName(ev.category);
+    var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
     var link = ev.website || ev.register_link || '';
     var desc = truncate(ev.description, 150);
 
@@ -513,9 +505,13 @@
       html += '<div class="dk-desc">' + escapeHtml(desc) + '</div>';
     }
 
-    // Category
-    if (catName) {
-      html += '<span class="dk-category">' + escapeHtml(catName) + '</span>';
+    // Topic tags
+    if (topics.length > 0) {
+      html += '<div class="dk-topics">';
+      topics.forEach(function(t) {
+        html += '<span class="dk-category">' + escapeHtml(t) + '</span>';
+      });
+      html += '</div>';
     }
 
     html += '</div>'; // card-body
