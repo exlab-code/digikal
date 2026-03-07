@@ -131,4 +131,101 @@ Website  iCal-Abo             Cursor, GPTs     (Svelte SPA)</pre>
       </a>
     </div>
   </section>
+
+  <!-- Impressum -->
+  <section class="border-t border-gray-200 pt-8 mt-10">
+    <h2 class="text-xl font-semibold text-gray-800 mb-3">Impressum</h2>
+    <div class="text-gray-600 text-sm leading-relaxed space-y-2">
+      <p>Angaben gem&auml;&szlig; &sect; 5 TMG</p>
+      <p>
+        Julius Falk<br>
+        ex:lab<br>
+        Gubener Stra&szlig;e 43<br>
+        10243 Berlin
+      </p>
+      <p>
+        <span class="font-medium text-gray-700">Kontakt:</span><br>
+        E-Mail: <a href="mailto:julius@ex-lab.de" class="text-primary-600 hover:underline">julius@ex-lab.de</a>
+      </p>
+      <p>
+        <span class="font-medium text-gray-700">Verantwortlich f&uuml;r den Inhalt nach &sect; 55 Abs. 2 RStV:</span><br>
+        Julius Falk
+      </p>
+      <div class="mt-4">
+        <p class="font-medium text-gray-700 mb-1">Haftungsausschluss</p>
+        <p>
+          Die Inhalte dieser Website werden mit gr&ouml;&szlig;tm&ouml;glicher Sorgfalt erstellt. F&uuml;r die Richtigkeit, Vollst&auml;ndigkeit und Aktualit&auml;t der Inhalte &uuml;bernehmen wir jedoch keine Gew&auml;hr. Als Diensteanbieter sind wir gem&auml;&szlig; &sect; 7 Abs.&thinsp;1 TMG f&uuml;r eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach &sect;&sect; 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, &uuml;bermittelte oder gespeicherte fremde Informationen zu &uuml;berwachen. Bei Bekanntwerden von Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Datenschutz -->
+  <section class="border-t border-gray-200 pt-8 mt-10 mb-10">
+    <h2 class="text-xl font-semibold text-gray-800 mb-3">Datenschutzerkl&auml;rung</h2>
+    <div class="text-gray-600 text-sm leading-relaxed space-y-4">
+
+      <div>
+        <h3 class="font-medium text-gray-700 mb-1">1. Verantwortlicher</h3>
+        <p>
+          Verantwortlicher im Sinne der DSGVO ist Julius Falk, erreichbar unter
+          <a href="mailto:julius@ex-lab.de" class="text-primary-600 hover:underline">julius@ex-lab.de</a>.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium text-gray-700 mb-1">2. Hosting</h3>
+        <p>
+          Diese Website wird &uuml;ber GitHub Pages (GitHub Inc., USA) ausgeliefert und &uuml;ber GitHub Actions gebaut. GitHub kann beim Abruf der Seiten Zugriffsdaten (z.&thinsp;B. IP-Adresse, Zeitpunkt, abgerufene Seite) in Server-Logfiles speichern. Weitere Informationen:
+          <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages#data-collection" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">GitHub Pages Privacy</a>.
+          Die Nutzung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer zuverl&auml;ssigen Bereitstellung der Website).
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium text-gray-700 mb-1">3. Webanalyse (Umami)</h3>
+        <p>
+          Wir nutzen <a href="https://umami.is" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">Umami</a>, eine datenschutzfreundliche, selbst gehostete Webanalyse-Software auf einem Hetzner-Server in N&uuml;rnberg (Deutschland). Umami speichert keine Cookies, erhebt keine personenbezogenen Daten und erstellt keine ger&auml;te&uuml;bergreifenden Profile. Es werden ausschlie&szlig;lich anonymisierte Seitenaufrufe und Events erfasst. Alle Daten verbleiben auf dem deutschen Server. Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium text-gray-700 mb-1">4. API-Zugriffe</h3>
+        <p>
+          Die Website ruft Veranstaltungsdaten von einem selbst gehosteten Directus-Server (calapi.buerofalk.de) auf einem Hetzner-Server in N&uuml;rnberg (Deutschland) ab. Dabei wird Ihre IP-Adresse technisch bedingt an den Server &uuml;bermittelt. Es werden keine personenbezogenen Daten gespeichert oder ausgewertet. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium text-gray-700 mb-1">5. Kalender-Abo (Nextcloud)</h3>
+        <p>
+          Das Kalender-Abo (iCal/CalDAV) wird &uuml;ber eine selbst gehostete Nextcloud-Instanz auf einem Hetzner-Server in N&uuml;rnberg (Deutschland) bereitgestellt. Beim Abruf des Kalenders wird Ihre IP-Adresse technisch bedingt an den Server &uuml;bermittelt. Es werden keine personenbezogenen Daten gespeichert oder ausgewertet. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium text-gray-700 mb-1">6. Newsletter</h3>
+        <p>
+          F&uuml;r den Newsletter-Versand nutzen wir Listmonk, selbst gehostet auf einem Hetzner-Server in N&uuml;rnberg (Deutschland). Bei der Anmeldung wird ausschlie&szlig;lich Ihre E-Mail-Adresse gespeichert. Die Verarbeitung erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Sie k&ouml;nnen sich jederzeit &uuml;ber den Abmeldelink in jeder E-Mail abmelden.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium text-gray-700 mb-1">7. Externe Links</h3>
+        <p>
+          Diese Website enth&auml;lt Links zu externen Veranstaltungsseiten und Organisationen. F&uuml;r deren Datenschutzpraktiken sind wir nicht verantwortlich.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium text-gray-700 mb-1">8. Ihre Rechte</h3>
+        <p>
+          Sie haben das Recht auf Auskunft (&sect; 15 DSGVO), Berichtigung (&sect; 16 DSGVO), L&ouml;schung (&sect; 17 DSGVO), Einschr&auml;nkung der Verarbeitung (&sect; 18 DSGVO), Daten&uuml;bertragbarkeit (&sect; 20 DSGVO) und Widerspruch (&sect; 21 DSGVO). Wenden Sie sich dazu an
+          <a href="mailto:julius@ex-lab.de" class="text-primary-600 hover:underline">julius@ex-lab.de</a>.
+          Zudem steht Ihnen ein Beschwerderecht bei einer Datenschutz-Aufsichtsbeh&ouml;rde zu.
+        </p>
+      </div>
+
+    </div>
+  </section>
 </div>
