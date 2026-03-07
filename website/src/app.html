@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="icon" type="image/png" href="%sveltekit.assets%/favicon.png" />
+
+	<!-- Self-hosted Inter font -->
+	<style>
+		@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('%sveltekit.assets%/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+		@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('%sveltekit.assets%/fonts/inter-latin-500-normal.woff2') format('woff2'); }
+		@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('%sveltekit.assets%/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+		@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('%sveltekit.assets%/fonts/inter-latin-700-normal.woff2') format('woff2'); }
+	</style>
+
+	<!-- Umami Analytics -->
+	<script defer src="https://umami.common-display.de/script.js" data-website-id="cdc4de63-c907-4782-b2e7-a2b13e589319"></script>
+
+	%sveltekit.head%
+</head>
+<body data-sveltekit-preload-data="hover">
+	<div style="display: contents">%sveltekit.body%</div>
+</body>
+</html>

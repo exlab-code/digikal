@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DIRECTUS_API_URL: ${{ vars.DIRECTUS_API_URL }}
+      DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,7 +42,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: website/public
+          path: website/build
 
   deploy:
     needs: build

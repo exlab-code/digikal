@@ -57,6 +57,9 @@ var/
 .installed.cfg
 *.egg
 
+# SvelteKit
+.svelte-kit/
+
 # Node.js
 node_modules/
 npm-debug.log
