@@ -22,7 +22,9 @@ jobs:
           python-version: '3.12'
 
       - name: Download DB from MCP server
-        run: curl -fSL "${{ vars.MCP_SERVER_URL }}/foerdermittel.db" -o foerdermittel.db
+        run: curl -fSL "${MCP_SERVER_URL}/foerdermittel.db" -o foerdermittel.db
+        env:
+          MCP_SERVER_URL: ${{ vars.MCP_SERVER_URL }}
 
       - name: Export JSON
         run: python scripts/export_json.py --db foerdermittel.db -o website/public/foerdermittel.json
