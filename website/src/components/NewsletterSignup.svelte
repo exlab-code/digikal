@@ -66,7 +66,7 @@
     id="newsletter"
   >
     {#if status === 'success'}
-      <p class="text-sm text-green-700">Danke! Du bist jetzt für den Newsletter angemeldet.</p>
+      <p class="text-sm text-green-700">Danke! Bitte pr&uuml;fe dein Postfach und best&auml;tige deine Anmeldung.</p>
     {:else}
       <p class="text-gray-600 mb-3 text-sm">Monatliche Übersicht der wichtigsten Veranstaltungen per E-Mail.</p>
 
