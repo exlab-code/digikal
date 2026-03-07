@@ -42,18 +42,22 @@ jobs:
           LISTMONK_URL: ${{ secrets.LISTMONK_URL }}
           LISTMONK_USER: ${{ secrets.LISTMONK_USER }}
           LISTMONK_API: ${{ secrets.LISTMONK_API }}
+          INPUT_MONTH: ${{ inputs.month }}
+          INPUT_YEAR: ${{ inputs.year }}
+          INPUT_EDITORIAL: ${{ inputs.editorial }}
+          INPUT_NO_SCHEDULE: ${{ inputs.no_schedule }}
         run: |
           ARGS=""
-          if [ -n "${{ inputs.month }}" ]; then
-            ARGS="$ARGS --month ${{ inputs.month }}"
+          if [ -n "$INPUT_MONTH" ]; then
+            ARGS="$ARGS --month $INPUT_MONTH"
           fi
-          if [ -n "${{ inputs.year }}" ]; then
-            ARGS="$ARGS --year ${{ inputs.year }}"
+          if [ -n "$INPUT_YEAR" ]; then
+            ARGS="$ARGS --year $INPUT_YEAR"
           fi
-          if [ -n "${{ inputs.editorial }}" ]; then
-            ARGS="$ARGS --editorial \"${{ inputs.editorial }}\""
+          if [ -n "$INPUT_EDITORIAL" ]; then
+            ARGS="$ARGS --editorial \"$INPUT_EDITORIAL\""
           fi
-          if [ "${{ inputs.no_schedule }}" = "true" ]; then
+          if [ "$INPUT_NO_SCHEDULE" = "true" ]; then
             ARGS="$ARGS --no-schedule"
           fi
-          eval python newsletter/generate_newsletter.py $ARGS
+          python newsletter/generate_newsletter.py $ARGS

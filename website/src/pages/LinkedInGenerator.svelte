@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
-  import { getAllEvents } from '../services/directApi';
+  import { getEvents } from '../services/api';
 
   // Debug variables to show date ranges
   let nextWeekStart = '';
@@ -41,7 +41,7 @@
       isLoading = true;
       
       // Load all approved events directly from API
-      allEvents = await getAllEvents();
+      allEvents = await getEvents();
       console.log('Alle geladenen Veranstaltungen:', allEvents);
       
       // Filter events for next week manually
@@ -331,7 +331,7 @@
       hasError = false;
       
       // Load all approved events directly from API
-      allEvents = await getAllEvents();
+      allEvents = await getEvents();
       
       // Filter events for next week manually
       const now = new Date();
