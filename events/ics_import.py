@@ -11,7 +11,7 @@ import json
 import requests
 import hashlib
 import argparse
-from datetime import datetime
+from datetime import date, datetime
 from icalendar import Calendar
 from dotenv import load_dotenv
 
@@ -98,7 +98,7 @@ def parse_ics_file(ics_data, source_name, source_url, future_only=True):
             summary = str(component.get('summary', ''))
             description = str(component.get('description', ''))
             location = str(component.get('location', ''))
-            url = str(component.get('url', ''))
+            url = str(component.get('url') or '')
             
             # Extract start date/time for filtering
             start_date = component.get('dtstart')
@@ -129,8 +129,8 @@ def parse_ics_file(ics_data, source_name, source_url, future_only=True):
                         print(f"Skipping past event: {summary} (Start: {time_str})")
                         skipped_past_events += 1
                         continue
-                elif hasattr(dt, 'date'):  # For date objects
-                    if dt.date() < now.date():
+                elif isinstance(dt, date):  # For date-only objects (VALUE=DATE)
+                    if dt < now.date():
                         print(f"Skipping past event: {summary} (Start: {dt.strftime('%Y-%m-%d')})")
                         skipped_past_events += 1
                         continue
@@ -150,7 +150,7 @@ def parse_ics_file(ics_data, source_name, source_url, future_only=True):
             event = {
                 "listing_text": summary,
                 "detail_text": "\n".join(detail_parts),
-                "url": url or source_url,
+                "url": url or "",
                 "source_name": source_name,
                 "location": location,
                 "start_date": event_data.get('dtstart', ''),
