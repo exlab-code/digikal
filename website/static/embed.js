@@ -250,7 +250,7 @@
     this.root.innerHTML = '<div class="dk-loading"><div class="dk-spinner"></div><div>Events werden geladen\u2026</div></div>';
 
     var params = new URLSearchParams({
-      filter: JSON.stringify({ approved: { _eq: true } }),
+      filter: JSON.stringify({ review_status: { _eq: 'approved' } }),
       sort: 'start_date',
       limit: '-1'
     });

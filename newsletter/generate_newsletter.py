@@ -56,7 +56,7 @@ def fetch_events(year, month):
     params = {
         "filter": json.dumps({
             "_and": [
-                {"approved": {"_eq": True}},
+                {"review_status": {"_eq": "approved"}},
                 {"start_date": {"_gte": start}},
                 {"start_date": {"_lt": end}},
             ]

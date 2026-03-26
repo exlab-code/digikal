@@ -8,7 +8,7 @@ const DIRECTUS_TOKEN = process.env.DIRECTUS_API_TOKEN || '';
  * Fetch all approved events from Directus
  */
 export async function getEvents() {
-	const filterObj = { approved: { _eq: true } };
+	const filterObj = { review_status: { _eq: 'approved' } };
 
 	const params = new URLSearchParams({
 		filter: JSON.stringify(filterObj),

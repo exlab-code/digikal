@@ -73,8 +73,8 @@ def get_directus_events(approved_only=True):
     filter_params = {}
     if approved_only:
         filter_params = {
-            "approved": {
-                "_eq": True
+            "review_status": {
+                "_eq": "approved"
             }
         }
     
@@ -227,7 +227,7 @@ def parse_ical_event(ical_event):
                 event_data = {
                     'title': str(component.get('summary', 'Untitled Event')),
                     'start_date': component.get('dtstart').dt.isoformat(),
-                    'approved': False  # New events from Nextcloud are not approved by default
+                    'review_status': 'pending'  # New events from Nextcloud need review
                 }
                 
                 # Add end date if available

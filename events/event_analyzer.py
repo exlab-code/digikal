@@ -52,7 +52,7 @@ class EventData(BaseModel):
 
     # Additional fields added by processor
     source: Optional[str] = Field(None, description="Quelle der Veranstaltung")
-    approved: Optional[bool] = Field(None, description="Freigabestatus")
+    review_status: Optional[str] = Field("pending", description="Freigabestatus: pending, approved, rejected")
     website: Optional[str] = Field(None, description="Event-Website URL")
 
     @field_validator('start_date', 'end_date')
@@ -365,7 +365,7 @@ VALIDATED EXTRACTION:
 
             # Add metadata
             structured_data["source"] = content.get("source_name", event_data.get("source_name", "Unknown"))
-            structured_data["approved"] = None  # Set to pending approval by default
+            structured_data["review_status"] = "pending"  # Set to pending approval by default
             
             # Add URL if available
             if content.get("url") and not structured_data.get("website"):
@@ -530,7 +530,7 @@ def process_events(limit=10, batch_size=3):
                 continue
 
             # Save all events to Directus, but mark them as pending approval
-            structured_data["approved"] = None  # Pending approval
+            structured_data["review_status"] = "pending"  # Pending approval
 
             # Save to events collection
             success, status = directus.save_event(structured_data)
