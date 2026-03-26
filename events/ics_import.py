@@ -74,6 +74,8 @@ def parse_ics_file(ics_data, source_name, source_url, future_only=True):
             
             # Process all properties in the event
             for key, value in component.items():
+                # Normalize key to lowercase for consistent access
+                key = key.lower()
                 # Convert to string or appropriate format
                 if key in ['dtstart', 'dtend', 'dtstamp', 'created', 'last-modified']:
                     # Format datetime properly
