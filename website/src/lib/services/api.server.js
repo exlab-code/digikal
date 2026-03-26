@@ -1,8 +1,10 @@
 // Server-side only Directus API client
 // This file is only used during build (prerendering) — the token never reaches the browser.
 
-const DIRECTUS_URL = process.env.DIRECTUS_API_URL || 'https://calapi.buerofalk.de';
-const DIRECTUS_TOKEN = process.env.DIRECTUS_API_TOKEN || '';
+import { env } from '$env/dynamic/private';
+
+const DIRECTUS_URL = env.DIRECTUS_API_URL || 'https://calapi.buerofalk.de';
+const DIRECTUS_TOKEN = env.DIRECTUS_API_TOKEN || '';
 
 /**
  * Fetch all approved events from Directus
