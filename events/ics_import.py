@@ -135,10 +135,21 @@ def parse_ics_file(ics_data, source_name, source_url, future_only=True):
                         skipped_past_events += 1
                         continue
             
+            # Build detail_text that includes dates so the LLM can extract them
+            detail_parts = []
+            if event_data.get('dtstart'):
+                detail_parts.append(f"Startdatum: {event_data['dtstart']}")
+            if event_data.get('dtend'):
+                detail_parts.append(f"Enddatum: {event_data['dtend']}")
+            if location:
+                detail_parts.append(f"Ort: {location}")
+            if description:
+                detail_parts.append(description)
+
             # Create event object with all extracted data
             event = {
                 "listing_text": summary,
-                "detail_text": description,
+                "detail_text": "\n".join(detail_parts),
                 "url": url or source_url,
                 "source_name": source_name,
                 "location": location,
