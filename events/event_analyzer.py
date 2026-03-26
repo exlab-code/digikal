@@ -365,7 +365,11 @@ VALIDATED EXTRACTION:
 
             # Add metadata
             structured_data["source"] = content.get("source_name", event_data.get("source_name", "Unknown"))
-            structured_data["review_status"] = "pending"  # Set to pending approval by default
+            if event_data.get("auto_approve"):
+                structured_data["review_status"] = "approved"
+                structured_data["status"] = "auto-published"
+            else:
+                structured_data["review_status"] = "pending"
             
             # Add URL if available
             if content.get("url") and not structured_data.get("website"):

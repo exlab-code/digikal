@@ -58,6 +58,11 @@ REQUEST_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (compatible; DigiKal/1.0; +https://www.digikal.org)'
 }
 
+# Trusted sender domains/addresses — events from these get auto-approved
+TRUSTED_SENDERS = {
+    'buergermut.de',
+}
+
 
 def decode_mime_header(raw):
     """Decode a MIME-encoded header value."""
@@ -147,6 +152,16 @@ def sender_to_source(from_header):
     return 'email-submit'
 
 
+def is_trusted_sender(from_header):
+    """Check if the sender is a trusted source for auto-approval."""
+    raw = decode_mime_header(from_header)
+    email_match = re.search(r'[\w.-]+@([\w.-]+)', raw)
+    if not email_match:
+        return False
+    domain = email_match.group(1).lower()
+    return any(domain == d or domain.endswith('.' + d) for d in TRUSTED_SENDERS)
+
+
 def scrape_url(url):
     """Fetch a URL and extract text content."""
     try:
@@ -179,7 +194,7 @@ def scrape_url(url):
         return None
 
 
-def create_scraped_entry(url, raw_content, source_name):
+def create_scraped_entry(url, raw_content, source_name, trusted=False):
     """Create a scraped_data entry in Directus with scraped page content."""
     content_hash = hashlib.md5(raw_content.encode()).hexdigest()
 
@@ -199,6 +214,7 @@ def create_scraped_entry(url, raw_content, source_name):
         'url': url,
         'source_name': 'email-submit',
         'content_hash': content_hash,
+        'auto_approve': trusted,
         'raw_content': json.dumps({
             'url': url,
             'source_name': source_name,
@@ -260,10 +276,11 @@ def process_inbox(dry_run=False):
         subject = decode_mime_header(msg.get('Subject', ''))
         sender = msg.get('From', '')
         source_name = sender_to_source(sender)
+        trusted = is_trusted_sender(sender)
         body = get_email_body(msg)
         urls = extract_urls(body)
 
-        logger.info(f'Email from {source_name}: "{subject}" — {len(urls)} URL(s) found')
+        logger.info(f'Email from {source_name}: "{subject}" — {len(urls)} URL(s) found{" [TRUSTED]" if trusted else ""}')
 
         for url in urls:
             if dry_run:
@@ -274,7 +291,7 @@ def process_inbox(dry_run=False):
                     if not raw_content:
                         logger.warning(f'  No content scraped from: {url}')
                         continue
-                    item_id = create_scraped_entry(url, raw_content, source_name)
+                    item_id = create_scraped_entry(url, raw_content, source_name, trusted=trusted)
                     if item_id:
                         logger.info(f'  Created scraped_data #{item_id} for: {url}')
                         total_urls += 1
