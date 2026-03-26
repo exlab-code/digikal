@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Simple HumHub ICS Calendar Importer
+ICS Calendar Importer
 
 This script imports events from ICS calendar files defined in config/ics_sources.json
 and adds them to the Directus database as unprocessed events.
@@ -31,13 +31,7 @@ def ensure_config_exists():
     
     if not os.path.exists(CONFIG_PATH):
         default_config = {
-            "sources": [
-                {
-                    "name": "HumHub - Civic Data Cafe",
-                    "url": "https://community.civic-data.de/ical/humhub-event-3916e1fa-d9ab-44cc-8090-31179a4d/base.ics",
-                    "enabled": True
-                }
-            ]
+            "sources": []
         }
         
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
