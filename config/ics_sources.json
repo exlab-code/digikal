@@ -4,6 +4,11 @@
       "name": "CorrelAid",
       "url": "https://correlaid.org/veranstaltungen/calendar.ics",
       "enabled": true
+    },
+    {
+      "name": "Civic Data Community",
+      "url": "https://community.civic-data.de/remote/ical/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3NzQ1MjE4NjUsImlzcyI6Imh0dHBzOi8vY29tbXVuaXR5LmNpdmljLWRhdGEuZGUvIiwibmJmIjoxNzc0NTIxODY1LCJ1aWQiOjEyMiwiZ3VpZCI6IjRmNDgyZmY0LWExODctNDZkZS1hOGRkLTVmMzcwMjliYTAzOSIsImdsb2JhbCI6dHJ1ZX0.wCIlRi9C-Vtzo4bdWjH92w_nFtg3SaumfudCRWPtAwI",
+      "enabled": true
     }
   ]
 }
