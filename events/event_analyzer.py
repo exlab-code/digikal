@@ -262,37 +262,6 @@ class GPT4MiniProcessor:
         self.client = instructor.from_openai(OpenAI(api_key=api_key))
         self.directus = directus_client
         
-    # Cache for regex patterns to avoid recompiling
-    _reg_link_patterns = [
-        # Match href attributes in HTML links
-        re.compile(r'(?:Anmeldung|Registrierung).*?href=["\']((https?://)[^\s"\']+)["\']', re.IGNORECASE | re.DOTALL),
-        # Match URLs following registration phrases - ensure they start with http:// or https://
-        re.compile(r'(?:Zur Anmeldung|Zur Registrierung)[^\w]*?(https?://[^\s]+)', re.IGNORECASE | re.DOTALL),
-        # Match URLs following registration words - ensure they start with http:// or https://
-        re.compile(r'(?:Anmeldung|Registrierung)[^\w]*?(https?://[^\s]+)', re.IGNORECASE | re.DOTALL)
-    ]
-
-    def preprocess_event(self, content):
-        """Extract key information using regex before GPT processing"""
-        extracted_info = {}
-        
-        # Get text content efficiently
-        listing_text = content.get("listing_text", "") or ""
-        detail_text = content.get("detail_text", "") or ""
-        
-        # Only combine texts if needed for searching
-        combined_text = listing_text + " " + detail_text
-        
-        # Extract registration link using pre-compiled regex
-        for pattern in self._reg_link_patterns:
-            link_match = pattern.search(combined_text)
-            if link_match:
-                extracted_info["registration_link"] = link_match.group(1).strip()
-                break
-        
-        return extracted_info
-    
-    
     def process_event(self, event_data):
         """Process a single event with GPT-4o Mini and enhanced extraction"""
         # Extract raw content
@@ -305,11 +274,8 @@ class GPT4MiniProcessor:
         else:
             content = raw_content
         
-        # Pre-process to extract dates, times, and links with regex
-        extracted_info = self.preprocess_event(content)
-
         # Build prompt for LLM extraction
-        prompt = self._build_prompt(content, extracted_info)
+        prompt = self._build_prompt(content)
         
         try:
             # Get item ID for logging
@@ -351,23 +317,6 @@ VALIDATED EXTRACTION:
 """
             logger.info(date_log)
             
-            # Only override event_type, and registration_link only if it's a valid URL
-            for key, value in extracted_info.items():
-                # For registration_link, only override if it's a valid URL and LLM didn't provide one
-                if key == 'registration_link':
-                    # Validate that it's a proper URL starting with http:// or https://
-                    if value and re.match(r'^https?://', value):
-                        # Only override if LLM didn't provide a registration link
-                        if not structured_data.get(key):
-                            structured_data[key] = value
-                            logger.info(f"Using regex-extracted registration link: {value}")
-                            # Don't print to console - only log to file
-                # For other fields like event_type, only override if LLM didn't extract them
-                elif value and not structured_data.get(key):
-                    structured_data[key] = value
-                    logger.info(f"Using regex-extracted {key}: {value}")
-                    # Don't print to console - only log to file
-
             # Combine date + time into ISO datetime strings for Directus
             # (Directus has no separate start_time/end_time fields)
             start_date = structured_data.get('start_date', '')
@@ -452,17 +401,9 @@ VALIDATED EXTRACTION:
     
     # Cache for prompt templates to avoid rebuilding them each time
     _prompt_template = """\
-Extrahiere strukturierte Veranstaltungsdaten aus folgendem Text.
+Extrahiere strukturierte Veranstaltungsdaten aus folgenden Rohdaten.
 
-QUELLE: {source_name}
-{extracted_info}
-LISTING TEXT:
-{listing_text}
-
-DETAIL TEXT:
-{detail_text}
-
-URL: {url}
+{raw_content}
 
 --- REGELN ---
 
@@ -503,39 +444,17 @@ Kosten sind KEIN Ausschlusskriterium. Im Zweifel: digital > NPO.
 
 Nutze null für unbekannte Felder."""
     
-    def _build_prompt(self, content, extracted_info=None):
-        """Build prompt for GPT-4o Mini with extracted information"""
-        # Get text content efficiently
-        listing_text = content.get("listing_text", "") or ""
-        detail_text = content.get("detail_text", "") or ""
-        url = content.get("url", "")
-        source_name = content.get("source_name", "") or ""
+    def _build_prompt(self, content):
+        """Build prompt with full raw content for LLM extraction"""
+        # Truncate very long text fields to manage token usage
+        content_copy = dict(content)
+        for key in ('listing_text', 'detail_text', 'description'):
+            if key in content_copy and isinstance(content_copy[key], str) and len(content_copy[key]) > 5000:
+                content_copy[key] = content_copy[key][:5000] + "..."
 
-        # Less aggressive trimming for texts to preserve more content
-        # Increase limits to retain more information while still managing token usage
-        if len(listing_text) > 3000:
-            listing_text = listing_text[:3000] + "..."
-        if len(detail_text) > 5000:
-            detail_text = detail_text[:5000] + "..."
+        raw_content = json.dumps(content_copy, indent=2, ensure_ascii=False, default=str)
 
-        # Add pre-extracted information if available
-        extracted_info_str = ""
-        if extracted_info:
-            extracted_info_str = "BEREITS EXTRAHIERTE INFORMATIONEN:\n"
-            for key, value in extracted_info.items():
-                extracted_info_str += f"- {key}: {value}\n"
-            extracted_info_str += "\n"
-
-        # Use the template with format() for better performance than f-strings with large text
-        prompt = self._prompt_template.format(
-            extracted_info=extracted_info_str,
-            source_name=source_name,
-            listing_text=listing_text,
-            detail_text=detail_text,
-            url=url
-        )
-
-        return prompt
+        return self._prompt_template.format(raw_content=raw_content)
 
 def process_events(limit=10, batch_size=3):
     """Main processing function for event extraction and analysis"""
