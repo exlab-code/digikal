@@ -62,7 +62,7 @@
       <!-- Metadata -->
       <div class="flex flex-wrap gap-x-3 gap-y-1 text-sm text-gray-500 mb-2">
         {#if startTime}
-          <span>{startTime}{#if endTime} – {endTime}{/if} Uhr</span>
+          <span>{startTime} {#if endTime}– {endTime} {/if}Uhr</span>
         {/if}
         {#if event.location}
           <span>{event.location}</span>
@@ -78,12 +78,10 @@
             {/if}
           </span>
         {/if}
+        {#if event.organizer}
+          <span>{event.organizer}</span>
+        {/if}
       </div>
-
-      <!-- Organizer -->
-      {#if event.organizer}
-        <p class="text-xs text-gray-400 mb-2">{event.organizer}</p>
-      {/if}
 
       <!-- Description -->
       {#if event.description}

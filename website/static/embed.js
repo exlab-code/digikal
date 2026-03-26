@@ -4,10 +4,24 @@
   // === Config ===
   var API_URL = 'https://calapi.buerofalk.de/items/events';
   var API_TOKEN = 'IXya-sE0fEPTKsHDqYLy7acTyilIpUdC';
-  var DIGIKAL_URL = 'https://digikal.org';
+  var DIGIKAL_URL = 'https://www.digikal.org';
 
   var MONTH_NAMES = ['Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
   var MONTH_NAMES_LONG = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+
+  // Sponsor color overrides (organizer name → accent color)
+  var SPONSOR_COLORS = {
+    'd3': '#fed220'
+  };
+
+  function getSponsorColor(organizer) {
+    if (!organizer) return null;
+    var key = organizer.toLowerCase().trim();
+    for (var name in SPONSOR_COLORS) {
+      if (key.indexOf(name) !== -1) return SPONSOR_COLORS[name];
+    }
+    return null;
+  }
 
   // === CSS ===
   var STYLES = `
@@ -24,7 +38,6 @@
 
     /* Header */
     .dk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
-    .dk-header h2 { font-size: 1.25rem; font-weight: 700; color: #111827; }
     .dk-event-count { font-size: 0.85rem; color: #6b7280; }
 
     /* Filters */
@@ -38,60 +51,70 @@
       background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center;
       appearance: none;
       cursor: pointer;
-      min-width: 170px;
+      width: 170px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .dk-select:focus { outline: none; border-color: #3178ff; box-shadow: 0 0 0 3px rgba(49,120,255,0.15); }
 
     /* Event list */
     .dk-events { display: flex; flex-direction: column; gap: 14px; }
 
-    /* Event card */
+    /* Event card — clickable link */
     .dk-card {
+      position: relative;
       display: flex;
+      gap: 16px;
+      align-items: flex-start;
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-      overflow: hidden;
-      transition: box-shadow 0.2s, transform 0.2s;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.2s, border-color 0.2s;
     }
-    .dk-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-2px); }
+    .dk-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: #93c5fd; }
+    .dk-card:hover .dk-card-title { color: #3178ff; }
 
     /* Date badge */
     .dk-date-badge {
-      background: #3178ff;
-      color: #fff;
+      background: #eff6ff;
+      color: #1d4ed8;
       min-width: 56px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 12px 6px;
+      padding: 8px 6px;
+      border-radius: 8px;
       text-align: center;
       flex-shrink: 0;
     }
-    .dk-date-day { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
-    .dk-date-month { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; }
-    .dk-date-multi { font-size: 0.65rem; margin-top: 4px; background: rgba(255,255,255,0.2); border-radius: 10px; padding: 2px 6px; }
+    .dk-date-day { font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
+    .dk-date-month { font-size: 0.7rem; font-weight: 500; }
+    .dk-date-multi { font-size: 0.6rem; margin-top: 2px; color: #3b82f6; }
+
+    /* Sponsor date badge */
+    .dk-card--sponsor .dk-date-badge { background: #fed220; color: #111827; }
+    .dk-card--sponsor .dk-date-multi { color: #111827; }
+    .dk-card--sponsor:hover { border-color: #fed220; }
+    .dk-card--sponsor:hover .dk-card-title { color: #b45309; }
 
     /* Card body */
-    .dk-card-body { padding: 14px 16px; flex: 1; min-width: 0; }
+    .dk-card-body { flex: 1; min-width: 0; }
     .dk-card-title {
       font-size: 1rem;
       font-weight: 600;
       color: #111827;
-      margin-bottom: 6px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      margin-bottom: 4px;
+      transition: color 0.15s;
     }
-    .dk-card-title a { color: inherit; text-decoration: none; }
-    .dk-card-title a:hover { color: #3178ff; }
 
     /* Meta row */
-    .dk-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.8rem; color: #4b5563; margin-bottom: 8px; }
-    .dk-meta-item { display: flex; align-items: center; gap: 4px; }
-    .dk-meta-item svg { width: 14px; height: 14px; flex-shrink: 0; color: #3178ff; }
+    .dk-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.8rem; color: #6b7280; margin-bottom: 8px; }
+    .dk-meta-item { display: flex; align-items: center; gap: 3px; }
     .dk-online { color: #3178ff; font-weight: 500; }
     .dk-free { color: #059669; font-weight: 500; }
 
@@ -99,10 +122,6 @@
     .dk-desc {
       font-size: 0.8rem;
       color: #6b7280;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
       margin-bottom: 8px;
     }
 
@@ -117,6 +136,22 @@
       border-radius: 10px;
       font-weight: 500;
     }
+    .dk-card--sponsor .dk-category { background: #fef9e7; color: #92400e; }
+
+    /* Sponsor badge */
+    .dk-sponsor-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #fed220;
+      color: #111827;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+    .dk-card--sponsor .dk-card-title { padding-right: 70px; }
 
     /* Load more */
     .dk-load-more {
@@ -183,14 +218,6 @@
     }
   `;
 
-  // === SVG Icons ===
-  var ICONS = {
-    clock: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    pin: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
-    monitor: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
-    user: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
-  };
-
   // === Helpers ===
   function extractTime(dateStr) {
     if (!dateStr || dateStr.indexOf('T') === -1) return null;
@@ -204,12 +231,6 @@
     if (cost === null || cost === undefined || cost === '') return null;
     if (cost === 0 || cost === '0' || String(cost).toLowerCase() === 'kostenlos' || String(cost).toLowerCase() === 'free') return 'Kostenlos';
     return typeof cost === 'number' ? cost + ' \u20AC' : cost;
-  }
-
-  function truncate(text, max) {
-    if (!text || text.length <= max) return text || '';
-    var cut = text.substring(0, max).lastIndexOf(' ');
-    return text.substring(0, cut > 0 ? cut : max) + '\u2026';
   }
 
   function escapeHtml(str) {
@@ -226,6 +247,7 @@
     this.container = container;
     this.count = parseInt(container.getAttribute('data-count'), 10) || 10;
     this.preTopic = container.getAttribute('data-topic') || '';
+    this.preSponsor = container.getAttribute('data-sponsor') || '';
     this.showFilters = container.getAttribute('data-show-filters') !== 'false';
 
     this.allEvents = [];
@@ -233,6 +255,7 @@
     this.visibleCount = this.count;
     this.selectedMonth = '';
     this.selectedTopic = this.preTopic;
+    this.selectedSponsor = this.preSponsor;
 
     this.shadow = container.attachShadow({ mode: 'open' });
     var style = document.createElement('style');
@@ -278,6 +301,7 @@
     now.setHours(0, 0, 0, 0);
     var selMonth = this.selectedMonth;
     var selTopic = this.selectedTopic;
+    var selSponsor = this.selectedSponsor;
 
     this.filteredEvents = this.allEvents.filter(function(ev) {
       var start = new Date(ev.start_date);
@@ -286,6 +310,10 @@
       if (selTopic) {
         var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
         if (topics.indexOf(selTopic) === -1) return false;
+      }
+      if (selSponsor) {
+        var org = (ev.organizer || '').toLowerCase();
+        if (org.indexOf(selSponsor.toLowerCase()) === -1) return false;
       }
       return true;
     });
@@ -296,6 +324,7 @@
     now.setHours(0, 0, 0, 0);
     var counts = {};
     var selTopic = this.selectedTopic;
+    var selSponsor = this.selectedSponsor;
 
     this.allEvents.forEach(function(ev) {
       var start = new Date(ev.start_date);
@@ -303,6 +332,10 @@
       if (selTopic) {
         var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
         if (topics.indexOf(selTopic) === -1) return;
+      }
+      if (selSponsor) {
+        var org = (ev.organizer || '').toLowerCase();
+        if (org.indexOf(selSponsor.toLowerCase()) === -1) return;
       }
       var key = getMonthKey(start);
       counts[key] = (counts[key] || 0) + 1;
@@ -320,11 +353,16 @@
     now.setHours(0, 0, 0, 0);
     var counts = {};
     var selMonth = this.selectedMonth;
+    var selSponsor = this.selectedSponsor;
 
     this.allEvents.forEach(function(ev) {
       var start = new Date(ev.start_date);
       if (start < now) return;
       if (selMonth && getMonthKey(start) !== selMonth) return;
+      if (selSponsor) {
+        var org = (ev.organizer || '').toLowerCase();
+        if (org.indexOf(selSponsor.toLowerCase()) === -1) return;
+      }
       var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
       topics.forEach(function(t) {
         counts[t] = (counts[t] || 0) + 1;
@@ -338,13 +376,39 @@
     });
   };
 
+  DigiKalEmbed.prototype.getAvailableSponsors = function() {
+    var now = new Date();
+    now.setHours(0, 0, 0, 0);
+    var counts = {};
+    var selMonth = this.selectedMonth;
+    var selTopic = this.selectedTopic;
+
+    this.allEvents.forEach(function(ev) {
+      var start = new Date(ev.start_date);
+      if (start < now) return;
+      if (selMonth && getMonthKey(start) !== selMonth) return;
+      if (selTopic) {
+        var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
+        if (topics.indexOf(selTopic) === -1) return;
+      }
+      if (ev.organizer) {
+        counts[ev.organizer] = (counts[ev.organizer] || 0) + 1;
+      }
+    });
+
+    return Object.keys(counts).sort(function(a, b) {
+      return a.localeCompare(b);
+    }).map(function(key) {
+      return { key: key, label: key, count: counts[key] };
+    });
+  };
+
   DigiKalEmbed.prototype.render = function() {
     var self = this;
     var html = '';
 
-    // Header
+    // Header (event count only, no headline)
     html += '<div class="dk-header">';
-    html += '<h2>Veranstaltungen</h2>';
     html += '<span class="dk-event-count">' + this.filteredEvents.length + ' Event' + (this.filteredEvents.length !== 1 ? 's' : '') + '</span>';
     html += '</div>';
 
@@ -352,6 +416,7 @@
     if (this.showFilters) {
       var months = this.getAvailableMonths();
       var topics = this.getAvailableTopics();
+      var sponsors = this.getAvailableSponsors();
 
       html += '<div class="dk-filters">';
 
@@ -369,6 +434,16 @@
         html += '<option value="">Alle Themen</option>';
         topics.forEach(function(t) {
           html += '<option value="' + escapeHtml(t.key) + '"' + (self.selectedTopic === t.key ? ' selected' : '') + '>' + escapeHtml(t.label) + ' (' + t.count + ')</option>';
+        });
+        html += '</select>';
+      }
+
+      // Sponsor/organizer dropdown (only if no pre-filter set)
+      if (!this.preSponsor) {
+        html += '<select class="dk-select" data-filter="sponsor">';
+        html += '<option value="">Alle Veranstalter</option>';
+        sponsors.forEach(function(s) {
+          html += '<option value="' + escapeHtml(s.key) + '"' + (self.selectedSponsor === s.key ? ' selected' : '') + '>' + escapeHtml(s.label) + ' (' + s.count + ')</option>';
         });
         html += '</select>';
       }
@@ -397,7 +472,6 @@
     // Footer
     html += '<div class="dk-footer">';
     html += '<a href="' + DIGIKAL_URL + '" target="_blank" rel="noopener noreferrer">Alle Events auf digikal.org \u2192</a>';
-    html += '<span class="dk-powered">Powered by <a href="' + DIGIKAL_URL + '" target="_blank" rel="noopener noreferrer">DigiKal</a></span>';
     html += '</div>';
 
     this.root.innerHTML = html;
@@ -423,6 +497,16 @@
       });
     }
 
+    var sponsorSelect = this.root.querySelector('[data-filter="sponsor"]');
+    if (sponsorSelect) {
+      sponsorSelect.addEventListener('change', function() {
+        self.selectedSponsor = this.value;
+        self.visibleCount = self.count;
+        self.filterEvents();
+        self.render();
+      });
+    }
+
     var loadMoreBtn = this.root.querySelector('.dk-load-more');
     if (loadMoreBtn) {
       loadMoreBtn.addEventListener('click', function() {
@@ -441,7 +525,8 @@
     var cost = formatCost(ev.cost);
     var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
     var link = ev.website || ev.register_link || '';
-    var desc = truncate(ev.description, 150);
+    var isSponsor = !!getSponsorColor(ev.organizer);
+    var cardClass = 'dk-card' + (isSponsor ? ' dk-card--sponsor' : '');
 
     // Multi-day?
     var multiDay = '';
@@ -453,7 +538,18 @@
       }
     }
 
-    var html = '<div class="dk-card">';
+    // Whole card is a link if URL exists
+    var html;
+    if (link) {
+      html = '<a class="' + cardClass + '" href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer">';
+    } else {
+      html = '<div class="' + cardClass + '">';
+    }
+
+    // Sponsor badge (top right)
+    if (isSponsor) {
+      html += '<span class="dk-sponsor-badge">D3</span>';
+    }
 
     // Date badge
     html += '<div class="dk-date-badge">';
@@ -466,27 +562,21 @@
     html += '<div class="dk-card-body">';
 
     // Title
-    html += '<div class="dk-card-title">';
-    if (link) {
-      html += '<a href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(ev.title) + '</a>';
-    } else {
-      html += escapeHtml(ev.title);
-    }
-    html += '</div>';
+    html += '<div class="dk-card-title">' + escapeHtml(ev.title) + '</div>';
 
     // Meta
     html += '<div class="dk-meta">';
 
     if (startTime) {
-      html += '<span class="dk-meta-item">' + ICONS.clock + '<span>' + startTime;
+      html += '<span class="dk-meta-item">' + startTime;
       if (endTime) html += ' \u2013 ' + endTime;
-      html += '</span></span>';
+      html += ' Uhr</span>';
     }
 
     if (ev.location) {
-      html += '<span class="dk-meta-item">' + ICONS.pin + '<span>' + escapeHtml(ev.location) + '</span></span>';
+      html += '<span class="dk-meta-item">' + escapeHtml(ev.location) + '</span>';
     } else {
-      html += '<span class="dk-meta-item">' + ICONS.monitor + '<span class="dk-online">Online</span></span>';
+      html += '<span class="dk-meta-item dk-online">Online</span>';
     }
 
     if (cost) {
@@ -495,14 +585,14 @@
     }
 
     if (ev.organizer) {
-      html += '<span class="dk-meta-item">' + ICONS.user + '<span>' + escapeHtml(ev.organizer) + '</span></span>';
+      html += '<span class="dk-meta-item">' + escapeHtml(ev.organizer) + '</span>';
     }
 
     html += '</div>';
 
-    // Description
-    if (desc) {
-      html += '<div class="dk-desc">' + escapeHtml(desc) + '</div>';
+    // Description (full, no truncation)
+    if (ev.description) {
+      html += '<div class="dk-desc">' + escapeHtml(ev.description) + '</div>';
     }
 
     // Topic tags
@@ -515,7 +605,7 @@
     }
 
     html += '</div>'; // card-body
-    html += '</div>'; // card
+    html += link ? '</a>' : '</div>';
 
     return html;
   };

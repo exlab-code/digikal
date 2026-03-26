@@ -41,7 +41,7 @@ class EventData(BaseModel):
     start_time: Optional[str] = Field(None, description="Startzeit (HH:MM)")
     end_date: Optional[str] = Field(None, description="Enddatum im ISO-Format")
     end_time: Optional[str] = Field(None, description="Endzeit (HH:MM)")
-    location: str = Field(..., min_length=1, description="Physischer Ort oder 'Online'")
+    location: str = Field(..., min_length=1, description="'Online' oder nur der Stadtname (kein Adressdetail)")
     organizer: str = Field(..., min_length=1, description="Veranstalter (Organisation, nicht Einzelperson)")
     speaker: Optional[str] = Field(None, description="Referent*in / Dozent*in / Sprecher*in")
     tags: List[str] = Field(default_factory=list, max_length=5, description="Schlagwörter (max 5)")
@@ -425,6 +425,10 @@ TAGS (max 5, in tag_groups einordnen):
 - Title Case: "Machine Learning", "Social Media"
 - "Online" als Tag bei virtuellen Events (zusätzlich zum Format-Tag)
 - "Kostenlos" als Tag wenn kostenlos
+
+LOCATION:
+- "Online" bei virtuellen/digitalen Events
+- Bei Präsenz-Events NUR den Stadtnamen (z.B. "Berlin", "Frankfurt am Main"), KEINE Adresse/Straße/Gebäude
 
 DATUM/ZEIT:
 - Format: YYYY-MM-DD / HH:MM. Europäisch: DD.MM.YYYY
