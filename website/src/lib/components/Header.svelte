@@ -72,7 +72,7 @@
                   after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-primary-600 after:w-full
                   {currentPath === '/foerderprogramme' ? 'after:block' : 'after:hidden'}"
           >
-            Förderprogramme
+            <span class="line-through">Förderprogramme</span>
           </a>
         </li>
         <li class="relative">
