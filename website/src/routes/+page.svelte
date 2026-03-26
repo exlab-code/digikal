@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import EventList from '$lib/components/EventList.svelte';
 	import EventFilter from '$lib/components/EventFilter.svelte';
 	import NewsletterSignup from '$lib/components/NewsletterSignup.svelte';
@@ -6,9 +7,27 @@
 
 	export let data;
 
-	// Initialize stores from server-loaded data
+	// Initialize stores from prerendered data (for SEO / initial paint)
 	events.set(data.events);
 	calendarUrls.set(data.calendarUrls);
+
+	// Re-fetch fresh events on the client so visitors always see the latest data
+	onMount(async () => {
+		try {
+			const params = new URLSearchParams({
+				filter: JSON.stringify({ review_status: { _eq: 'approved' } }),
+				sort: 'start_date',
+				limit: '-1'
+			});
+			const res = await fetch(`https://calapi.buerofalk.de/items/events?${params}`);
+			if (res.ok) {
+				const json = await res.json();
+				events.set(json.data || []);
+			}
+		} catch (e) {
+			// Keep prerendered data on failure
+		}
+	});
 </script>
 
 <svelte:head>

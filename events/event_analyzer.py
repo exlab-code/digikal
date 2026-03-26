@@ -416,8 +416,8 @@ ORGANIZER vs. SPEAKER:
 - organizer = IMMER eine Organisation (Verband, Stiftung, Akademie), NIE eine Person
 - speaker = Referent*in, Dozent*in, Trainer*in (Personennamen)
 - Labels wie "Kontakt:", "Ansprechpartner*in:", "Referent*in:" → speaker, NICHT organizer
-- Keine Organisation im Text → QUELLE als organizer verwenden
-- NIE "Unbekannt" oder "null" als organizer
+- Keine Organisation im Text → aus der URL/Webseite ableiten (Domain-Name als Fallback)
+- NIE "Unbekannt", "null" oder "email-submit" als organizer
 
 TAGS (max 5, in tag_groups einordnen):
 - Allgemein und wiederverwendbar, nicht zu spezifisch
