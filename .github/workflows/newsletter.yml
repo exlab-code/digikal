@@ -2,7 +2,7 @@ name: Monthly Newsletter
 
 on:
   schedule:
-    - cron: '0 7 25 * *'  # 25th of each month at 07:00 UTC (08:00 CET)
+    - cron: '0 7 29 * *'  # 29th of each month at 07:00 UTC (08:00 CET)
   workflow_dispatch:
     inputs:
       month:
