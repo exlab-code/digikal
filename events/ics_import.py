@@ -186,10 +186,17 @@ def save_to_directus(events):
     error_count = 0
     
     for event in events:
-        # Create content hash for deduplication
-        event_json = json.dumps(event, ensure_ascii=False)
-        content_hash = calculate_hash(event_json)
-        
+        # Deduplicate by UID + start_date (stable across fetches)
+        # The full JSON hash changes every run because of volatile fields like dtstamp
+        source_name = event.get("source_name", "")
+        uid = event.get("uid", "")
+        start_date = event.get("start_date", "")
+        if uid and start_date:
+            stable_key = f"{source_name}|{uid}|{start_date}"
+        else:
+            stable_key = f"{source_name}|{event.get('listing_text','')}|{start_date}"
+        content_hash = calculate_hash(stable_key)
+
         # Check if event already exists
         check_url = f"{DIRECTUS_URL}/items/scraped_data"
         params = {
@@ -199,10 +206,10 @@ def save_to_directus(events):
                 }
             })
         }
-        
+
         check_response = requests.get(check_url, headers=headers, params=params)
         check_response.raise_for_status()
-        
+
         existing_items = check_response.json().get('data', [])
         if existing_items:
             print(f"Skipping duplicate event: {event['listing_text']}")
