@@ -2,7 +2,7 @@ import { writable, derived } from 'svelte/store';
 
 // Writable stores — populated from +page.server.js data
 export const events = writable([]);
-export const calendarUrls = writable({ nextcloud: '', ical: '' });
+export const calendarUrls = writable({ ical: '' });
 export const filters = writable({
 	category: '',
 	tags: [],

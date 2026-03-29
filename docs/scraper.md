@@ -93,23 +93,18 @@ run-scraper.bat --verbose --max-events 5
 
 ## Configuration
 
-The scraper uses two configuration files:
+The scraper uses the following configuration:
 
-1. `config/sources.json` - Contains the sources to scrape
-2. `config/directus.json` - Contains Directus API configuration
-
-These files will be created automatically with default values if they don't exist.
-
-You can also set environment variables in a `.env` file:
+1. `events/config/sources.json` - Contains the sources to scrape (created automatically with defaults if missing)
+2. Environment variables for Directus (set in `.env`):
 ```
 DIRECTUS_API_URL=https://your-directus-api-url
 DIRECTUS_API_TOKEN=your-api-token-here
-DIRECTUS_COLLECTION=scraped_data
 ```
 
 ## Event Sources
 
-The scraper is configured to collect events from the following sources (defined in `config/sources.json`):
+The scraper is configured to collect events from the following sources (defined in `events/config/sources.json`):
 
 ### Original Sources
 
@@ -162,7 +157,7 @@ These sources were identified during research and could be added if their HTML s
 
 ### Adding a New Source
 
-Each source in `config/sources.json` requires:
+Each source in `events/config/sources.json` requires:
 
 ```json
 {
@@ -203,8 +198,7 @@ python event_scraper.py --help
 ```
 
 Available options:
-- `--config`, `-c`: Path to configuration file (default: config/sources.json)
-- `--directus-config`, `-d`: Path to Directus configuration file (default: config/directus.json)
+- `--config`, `-c`: Path to configuration file (default: events/config/sources.json)
 - `--output`, `-o`: Output directory for scraped data (default: data)
 - `--max-events`, `-m`: Maximum events to scrape per source (-1 for all)
 - `--verbose`, `-v`: Enable verbose logging

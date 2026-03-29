@@ -1,7 +1,7 @@
-# Data and logs
-data/
-logs/
-.cache/
+# Data, logs, and caches
+**/data/
+**/logs/
+**/.cache/
 *.log
 *.db
 *.db-shm
@@ -19,20 +19,15 @@ linkedin-post*.md
 newsletter_*.html
 
 # Credentials (any depth)
-**/directus.json
 
 # Environment variables and sensitive configuration
 .env
 .env.local
 .env.*.local
 config.json
-config/directus.json
-config/nextcloud.json
 
 # Include example files
 !.env.example
-!config/directus.json.example
-!config/nextcloud.json.example
 
 # Python
 __pycache__/

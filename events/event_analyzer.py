@@ -148,7 +148,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("llm_extraction.log")
+        logging.FileHandler("events/logs/llm_extraction.log")
     ]
 )
 logger = logging.getLogger("event_extraction")
@@ -638,7 +638,7 @@ def main():
     parser = argparse.ArgumentParser(description="Process events with structured extraction using Instructor")
     parser.add_argument("--limit", "-l", type=int, default=10, help="Maximum number of items to process")
     parser.add_argument("--batch", "-b", type=int, default=3, help="Batch size for processing")
-    parser.add_argument("--log-file", default="llm_extraction.log", help="Path to log file for LLM extraction results")
+    parser.add_argument("--log-file", default="events/logs/llm_extraction.log", help="Path to log file for LLM extraction results")
     parser.add_argument("--mark-old", nargs="?", const="auto", metavar="DATE",
                         help="Bulk-mark old unprocessed items as processed (default: items older than 30 days). Accepts YYYY-MM-DD.")
     parser.add_argument("--dry-run", action="store_true", help="Preview --mark-old without making changes")

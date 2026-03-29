@@ -35,8 +35,6 @@ export async function getEvents() {
  */
 export function getCalendarUrls() {
 	return {
-		nextcloud:
-			'https://cloud.buerofalk.de/remote.php/dav/public-calendars/P3JABC3Rt87rzR9T?export',
 		ical: '/calendar.ics'
 	};
 }

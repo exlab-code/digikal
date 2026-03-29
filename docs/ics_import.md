@@ -8,7 +8,7 @@ The `ics_import.py` script allows you to import events from ICS calendar files i
 
 ## Configuration
 
-Events are imported from sources defined in `config/ics_sources.json`. The file has the following structure:
+Events are imported from sources defined in `events/config/ics_sources.json`. The file has the following structure:
 
 ```json
 {
@@ -32,7 +32,7 @@ Each source has the following properties:
 
 To add a new ICS calendar source:
 
-1. Open `config/ics_sources.json` in a text editor
+1. Open `events/config/ics_sources.json` in a text editor
 2. Add a new entry to the `sources` array:
 
 ```json
@@ -81,7 +81,7 @@ python ics_import.py --help
 ```
 
 Available options:
-- `--config`, `-c`: Path to configuration file (default: config/ics_sources.json)
+- `--config`, `-c`: Path to configuration file (default: events/config/ics_sources.json)
 - `--verbose`, `-v`: Enable verbose output
 - `--dry-run`, `-d`: Parse events but don't save to database
 - `--source`, `-s`: Process only the specified source by name

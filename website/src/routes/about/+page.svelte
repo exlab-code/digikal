@@ -199,9 +199,9 @@ Website  iCal-Abo             Cursor, GPTs     (SvelteKit)</pre>
 			</div>
 
 			<div>
-				<h3 class="font-medium text-gray-700 mb-1">5. Kalender-Abo (Nextcloud)</h3>
+				<h3 class="font-medium text-gray-700 mb-1">5. Kalender-Abo</h3>
 				<p>
-					Das Kalender-Abo (iCal/CalDAV) wird über eine selbst gehostete Nextcloud-Instanz auf einem Hetzner-Server in Nürnberg (Deutschland) bereitgestellt. Beim Abruf des Kalenders wird Ihre IP-Adresse technisch bedingt an den Server übermittelt. Es werden keine personenbezogenen Daten gespeichert oder ausgewertet. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
+					Das Kalender-Abo (.ics) wird als statische Datei über GitHub Pages bereitgestellt. Beim Abruf des Kalenders wird Ihre IP-Adresse technisch bedingt an die Server von GitHub übermittelt. Es werden keine personenbezogenen Daten durch uns gespeichert oder ausgewertet. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
 				</p>
 			</div>
 

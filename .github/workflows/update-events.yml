@@ -21,19 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install caldav instructor openai pydantic schedule python-dateutil
-
-      - name: Create Directus config
-        run: |
-          mkdir -p config
-          echo '{
-            "url": "'"$DIRECTUS_API_URL"'",
-            "token": "'"$DIRECTUS_API_TOKEN"'",
-            "collection": "scraped_data"
-          }' > config/directus.json
-        env:
-          DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
-          DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
+          pip install instructor openai pydantic python-dateutil
 
       - name: Run scraper
         env:
@@ -55,11 +43,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python events/event_analyzer.py --limit 500
 
-      - name: Run calendar sync
+      - name: Generate calendar .ics
         env:
           DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
           DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
-          NEXTCLOUD_URL: ${{ secrets.NEXTCLOUD_URL }}
-          NEXTCLOUD_USERNAME: ${{ secrets.NEXTCLOUD_USERNAME }}
-          NEXTCLOUD_PASSWORD: ${{ secrets.NEXTCLOUD_PASSWORD }}
-        run: python events/calendar_sync.py --sync-once
+        run: python events/generate_ics.py

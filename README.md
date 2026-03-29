@@ -9,7 +9,7 @@ This project is a complete event management system that:
 1. **Scrapes Events**: Collects event information from various websites
 2. **Analyzes with AI**: Uses LLM to extract structured data and determine event relevance
 3. **Provides Moderation**: Web interface for reviewing and approving events
-4. **Syncs to Calendar**: Synchronizes approved events with a Nextcloud calendar
+4. **Exports Calendar**: Generates a static `.ics` calendar file from approved events
 5. **Displays Events**: Website for showcasing approved events
 
 ## Documentation
@@ -20,7 +20,6 @@ Detailed documentation for each component of the system is available in the `doc
 - [Scraper Documentation](docs/scraper.md) - Details on the event scraper component
 - [ICS Import Documentation](docs/ics_import.md) - Guide to importing events from ICS calendars
 - [Analyzer Documentation](docs/analyzer.md) - Information about the LLM analysis component
-- [Sync Documentation](docs/sync.md) - Details on the Directus-Nextcloud sync
 - [Moderation Interface](docs/moderation.md) - Guide to the moderation web interface
 - [Website Documentation](docs/website.md) - Information about the website component
 - [CSS Customization](docs/customization.md) - How to customize the website appearance
@@ -29,7 +28,6 @@ Detailed documentation for each component of the system is available in the `doc
 
 - Python 3.6+
 - [Directus](https://directus.io/) instance for data storage
-- [Nextcloud](https://nextcloud.com/) with Calendar app for event sharing
 - OpenAI API key for LLM analysis
 - Web server for hosting the moderation interface (optional)
 
@@ -59,7 +57,7 @@ Detailed documentation for each component of the system is available in the `doc
    python events/event_scraper.py
    python events/ics_import.py
    python events/event_analyzer.py
-   python events/calendar_sync.py
+   python events/generate_ics.py
 
    # Fördermittel (Funding) System
    python foerdermittel/foerdermittel_scraper.py
@@ -82,15 +80,10 @@ The master script provides a convenient way to run all components:
 
 Available commands:
 - `scrape` - Run the scraper once
+- `ics-import` - Run the ICS calendar import
 - `analyze` - Run the LLM analysis once
-- `sync` - Start the sync service (continuous)
-- `sync-once` - Run the sync service once and exit
-- `clean` - Clean the Nextcloud calendar
-- `all` - Run scraper and analysis, then start sync service in background
-- `stop` - Stop all background services
-- `status` - Check the status of all services
-- `setup-cron` - Set up cron jobs for automation
-- `remove-cron` - Remove cron jobs
+- `generate-ics` - Generate static `calendar.ics` file
+- `all` - Run the full pipeline (scrape, import, analyze, generate)
 
 ### Scraper (event_scraper.py)
 
@@ -100,7 +93,6 @@ python event_scraper.py [options]
 
 Options:
 - `--config`, `-c` - Path to configuration file (default: config/sources.json)
-- `--directus-config`, `-d` - Path to Directus configuration file (default: config/directus.json)
 - `--output`, `-o` - Output directory for scraped data (default: data)
 - `--max-events`, `-m` - Maximum events to scrape per source (-1 for all)
 - `--verbose`, `-v` - Enable verbose logging
@@ -122,16 +114,14 @@ Options:
 - `--only-flag`, `-o` - Only flag mismatches without processing new events
 - `--log-file` - Path to log file for LLM extraction results (default: llm_extraction.log)
 
-### Sync Events (calendar_sync.py)
+### Calendar Export (generate_ics.py)
 
 ```bash
-python calendar_sync.py [options]
+python events/generate_ics.py [options]
 ```
 
 Options:
-- `--clean` - Clean Nextcloud calendar by removing all non-Directus events
-- `--sync-once` - Run sync once and exit (this is now the default behavior)
-- `--schedule` - Enable hourly scheduling (disabled by default)
+- `-o`, `--output` - Output file path (default: `website/static/calendar.ics`)
 
 ### Event Moderation
 
@@ -144,88 +134,33 @@ Event moderation is handled through the Directus admin interface at `https://cal
 ## Project Structure
 
 ```
-Event-Scraper/
+digikal/
 ├── events/                     # Event management system
+│   ├── config/                # Event source configurations
+│   │   ├── sources.json       # Web scraping sources
+│   │   └── ics_sources.json   # ICS calendar sources
 │   ├── event_scraper.py       # Main event scraper
 │   ├── event_analyzer.py      # LLM-based event analysis
 │   ├── ics_import.py          # ICS calendar import
-│   ├── calendar_sync.py       # Nextcloud calendar sync
-│   ├── feedback_analyzer.py   # Feedback analysis
-│   └── migrate_to_tags.py     # Tag migration utility
+│   └── generate_ics.py        # Static .ics calendar generation
 │
 ├── foerdermittel/             # Funding opportunity system
-│   ├── foerdermittel_scraper.py    # Funding program scraper
-│   ├── foerdermittel_analyzer.py   # LLM relevance analysis
-│   ├── foerdermittel_importer.py   # Import to Directus
-│   ├── README.md              # Fördermittel documentation
-│   └── config/                # Funding sources config
+│   ├── config/                # Funding sources config
+│   ├── scrape_dsee.py         # DSEE funding scraper
+│   └── mcp_server.py          # MCP server for funding data
 │
 ├── shared/                    # Shared utilities
-│   ├── __init__.py
 │   └── directus_client.py     # Directus API client
 │
 ├── website/                   # Public event website (GitHub Pages)
-│   ├── src/                   # Svelte components
-│   └── public/                # Built static files
+│   ├── src/                   # SvelteKit components
+│   └── static/                # Static assets (incl. calendar.ics)
 │
-├── config/                    # Shared configuration
-│   ├── directus.json.example
-│   └── nextcloud.json.example
-│
+├── newsletter/                # Newsletter generation
 ├── docs/                      # Documentation
 ├── scripts/                   # Utility scripts
 └── run_system.sh             # Master control script
 ```
-
-## Recent Updates (April 2025)
-
-### Added ICS Calendar Import
-
-A new feature has been added to import events from ICS calendar files:
-- Created a dedicated script (`ics_import.py`) for importing events from ICS calendars
-- Added support for HumHub and other ICS calendar sources
-- Implemented a configuration system for managing multiple ICS sources
-- Events are imported directly into the Directus database for processing by the analyzer
-- See [ICS Import Documentation](docs/ics_import.md) for details
-
-### Migrated from Categories to Tags-Based System
-
-The event categorization system has been completely redesigned:
-- Removed the legacy category-based system in favor of a more flexible tag-based approach
-- Updated the LLM prompt to generate normalized, consistent tags
-- Implemented tag grouping (topic, format, audience, cost)
-- Added tag frequency filtering to show only commonly used tags
-- Improved the UI with consistent styling for tags and time filters
-- Enhanced the event cards to display end times alongside start times
-- Fixed currency display to use proper Euro symbol (€)
-
-These changes provide a more intuitive and flexible way to organize and filter events.
-
-### Improved Date Extraction in LLM Analysis
-
-The date extraction in the LLM analysis script has been improved:
-- Removed regex-based date extraction to rely solely on the LLM's extraction capabilities
-- Fixed registration link extraction to only match valid URLs
-- Added comprehensive logging for better debugging
-- Improved override logic to prioritize LLM-extracted dates
-
-### Modified Sync Script Behavior
-
-The calendar_sync.py script behavior has been changed:
-- Now runs once and exits by default (no continuous scheduling)
-- Added `--schedule` flag to explicitly enable hourly scheduling if needed
-- Updated documentation in docs/sync.md with new options and examples
-- Added instructions for stopping the sync service if it's running in the background
-
-See [Sync Documentation](docs/sync.md) for more details on these changes.
-
-### Project Reorganization
-
-The project has been reorganized for better clarity and maintainability:
-- Renamed scripts to follow consistent naming conventions
-- Consolidated documentation into a central `docs` directory
-- Archived obsolete files and deprecated code
-- Updated file references in documentation and scripts
 
 ## License
 

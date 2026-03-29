@@ -84,7 +84,7 @@ except ImportError:
 load_dotenv()
 
 # Set up logging
-def setup_logging(log_level=logging.INFO, log_dir="logs"):
+def setup_logging(log_level=logging.INFO, log_dir="events/logs"):
     """Configure logging with file and console handlers."""
     # Ensure log directory exists
     os.makedirs(log_dir, exist_ok=True)
@@ -381,16 +381,16 @@ class DirectusClient:
 class EventScraper:
     """Main scraper class for collecting non-profit digitalization events with Directus integration."""
     
-    def __init__(self, config, directus_config=None, output_dir="data", max_events_per_source=3, save_html=False, cache_dir=None):
+    def __init__(self, config, output_dir="data", max_events_per_source=3, save_html=False, cache_dir=None, no_directus=False):
         """Initialize the scraper with configuration.
-        
+
         Args:
             config (dict): Configuration with sources to scrape
-            directus_config (dict): Directus API configuration (optional)
             output_dir (str): Directory to save output files
             max_events_per_source (int): Maximum events to scrape per source (-1 for all)
             save_html (bool): Whether to save HTML files to disk
             cache_dir (str): Directory to store cache files
+            no_directus (bool): If True, disable Directus integration
         """
         self.sources = config.get("sources", [])
         self.max_events = max_events_per_source
@@ -398,29 +398,25 @@ class EventScraper:
         self.directus_client = None
         self.collection_name = "scraped_data"
         self.save_html = save_html
-        
+
         # Initialize caches
         cache_file = os.path.join(cache_dir, "url_cache.pkl") if cache_dir else None
         self.url_cache = URLCache(cache_file=cache_file)
         self.hash_cache = ContentHashCache()
-        
+
         # Precompile regex patterns for text normalization
         self._compile_regex_patterns()
-        
-        # Initialize Directus client if configuration is provided
-        if directus_config:
-            # Check if using token or email/password auth
-            if directus_config.get("token"):
-                self.directus_client = DirectusClient(
-                    directus_config.get("url"),
-                    token=directus_config.get("token")
-                )
+
+        # Initialize Directus client from environment variables
+        if not no_directus:
+            directus_url = os.getenv("DIRECTUS_API_URL")
+            directus_token = os.getenv("DIRECTUS_API_TOKEN")
+            if directus_url and directus_token:
+                self.directus_client = DirectusClient(directus_url, token=directus_token)
+            elif directus_url:
+                logger.warning("DIRECTUS_API_URL set but DIRECTUS_API_TOKEN missing — skipping Directus integration")
             else:
-                self.directus_client = DirectusClient(
-                    directus_config.get("url"),
-                    email=directus_config.get("email"),
-                    password=directus_config.get("password")
-                )
+                logger.warning("DIRECTUS_API_URL not set — skipping Directus integration")
         
         # Initialize Firecrawl client if API key is available
         self.firecrawl_client = None
@@ -1040,15 +1036,14 @@ def load_config(config_path):
 def main():
     """Main entry point for the scraper application."""
     parser = argparse.ArgumentParser(description="Optimized Event Scraper for Non-Profit Digitalization Events")
-    parser.add_argument("--config", "-c", default="config/sources.json", help="Path to configuration file")
-    parser.add_argument("--directus-config", "-d", default="config/directus.json", help="Path to Directus configuration file")
+    parser.add_argument("--config", "-c", default="events/config/sources.json", help="Path to configuration file")
     parser.add_argument("--output", "-o", default="data", help="Output directory for scraped data")
     parser.add_argument("--max-events", "-m", type=int, default=-1, 
                         help="Maximum events to scrape per source (-1 for all)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
     parser.add_argument("--no-directus", action="store_true", help="Disable Directus database integration")
     parser.add_argument("--save-html", action="store_true", help="Save HTML files to disk")
-    parser.add_argument("--cache-dir", default=".cache", help="Directory to store cache files")
+    parser.add_argument("--cache-dir", default="events/.cache", help="Directory to store cache files")
     parser.add_argument("--clear-cache", action="store_true", help="Clear URL cache before running")
     
     args = parser.parse_args()
@@ -1088,38 +1083,9 @@ def main():
         with open(args.config, "w", encoding="utf-8") as f:
             json.dump(default_config, f, indent=2, ensure_ascii=False)
     
-    # Create default Directus config if it doesn't exist
-    if not args.no_directus and not os.path.exists(args.directus_config):
-        logger.info(f"Directus configuration file not found, creating default at {args.directus_config}")
-        
-        # Get values from environment variables or use defaults
-        default_directus_config = {
-            "url": os.getenv("DIRECTUS_API_URL", "https://your-directus-api-url"),
-            "token": os.getenv("DIRECTUS_API_TOKEN", "your-api-token-here"),
-            "collection": os.getenv("DIRECTUS_COLLECTION", "scraped_data")
-        }
-        
-        # Ensure directus config directory exists
-        directus_config_dir = os.path.dirname(args.directus_config)
-        if directus_config_dir and not os.path.exists(directus_config_dir):
-            os.makedirs(directus_config_dir, exist_ok=True)
-            
-        with open(args.directus_config, "w", encoding="utf-8") as f:
-            json.dump(default_directus_config, f, indent=2, ensure_ascii=False)
-    
     # Load configurations
     config = load_config(args.config)
-    directus_config = None
-    
-    if not args.no_directus:
-        try:
-            with open(args.directus_config, "r", encoding="utf-8") as f:
-                directus_config = json.load(f)
-                logger.info(f"Loaded Directus configuration from {args.directus_config}")
-        except Exception as e:
-            logger.error(f"Error loading Directus configuration: {str(e)}")
-            logger.warning("Continuing without Directus integration")
-    
+
     # Create cache directory if needed
     if args.cache_dir:
         os.makedirs(args.cache_dir, exist_ok=True)
@@ -1134,12 +1100,12 @@ def main():
     
     # Run the scraper
     scraper = EventScraper(
-        config=config, 
-        directus_config=directus_config,
+        config=config,
         output_dir=args.output,
         max_events_per_source=args.max_events,
         save_html=args.save_html,
-        cache_dir=args.cache_dir
+        cache_dir=args.cache_dir,
+        no_directus=args.no_directus
     )
     scraper.run()
 
