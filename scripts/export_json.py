@@ -89,8 +89,8 @@ def main():
     parser.add_argument(
         "-o", "--output",
         type=str,
-        default="website/public/foerdermittel.json",
-        help="Output JSON file path (default: website/public/foerdermittel.json)",
+        default="website/static/foerdermittel.json",
+        help="Output JSON file path (default: website/static/foerdermittel.json)",
     )
     parser.add_argument(
         "--db",

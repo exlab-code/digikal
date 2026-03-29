@@ -27,14 +27,14 @@ jobs:
           MCP_SERVER_URL: ${{ vars.MCP_SERVER_URL }}
 
       - name: Export JSON
-        run: python scripts/export_json.py --db foerdermittel.db -o website/public/foerdermittel.json
+        run: python scripts/export_json.py --db foerdermittel.db -o website/static/foerdermittel.json
 
       - name: Commit and push if changed
         id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add website/public/foerdermittel.json
+          git add website/static/foerdermittel.json
           if git diff --cached --quiet; then
             echo "No changes to foerdermittel.json — skipping commit"
             echo "changed=false" >> "$GITHUB_OUTPUT"
