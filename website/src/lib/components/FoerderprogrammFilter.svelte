@@ -398,7 +398,9 @@
     <!-- Bundesland dropdown -->
     <div class="tag-group mb-4">
       <h3 class="tag-group-title">Region</h3>
+      <label for="filter-bundesland" class="sr-only">Region</label>
       <select
+        id="filter-bundesland"
         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
         bind:value={selectedBundesland}
         on:change={selectBundesland}
@@ -412,7 +414,9 @@
     <!-- Funding amount range dropdown -->
     <div class="tag-group mb-4">
       <h3 class="tag-group-title">Fördersumme</h3>
+      <label for="filter-funding-amount" class="sr-only">Fördersumme</label>
       <select
+        id="filter-funding-amount"
         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
         bind:value={selectedFundingAmountRange}
         on:change={selectFundingAmountRange}
@@ -426,7 +430,9 @@
     <!-- Fördergeber searchable input -->
     <div class="tag-group mb-4">
       <h3 class="tag-group-title">Fördergeber</h3>
+      <label for="filter-foerdergeber" class="sr-only">Fördergeber</label>
       <input
+        id="filter-foerdergeber"
         type="text"
         list="foerdergeber-list"
         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -445,7 +451,9 @@
     <!-- Source dropdown -->
     <div class="tag-group mb-4">
       <h3 class="tag-group-title">Quelle</h3>
+      <label for="filter-source" class="sr-only">Quelle</label>
       <select
+        id="filter-source"
         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
         bind:value={selectedSource}
         on:change={selectSource}

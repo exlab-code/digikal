@@ -77,7 +77,9 @@
       <form on:submit={handleSubmit} class="flex flex-col gap-2">
         <!-- Honeypot: invisible to humans, bots fill it -->
         <input type="text" name="website_url" bind:value={honeypot} style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" tabindex="-1" autocomplete="off" />
+        <label for="newsletter-email" class="sr-only">E-Mail-Adresse</label>
         <input
+          id="newsletter-email"
           type="email"
           bind:value={email}
           placeholder="E-Mail-Adresse"

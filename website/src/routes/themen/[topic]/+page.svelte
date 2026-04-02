@@ -186,7 +186,7 @@
 											<span>{event.location || 'Online'}</span>
 										</div>
 										{#if event.organizer}
-											<p class="text-xs text-gray-400 mb-2">{event.organizer}</p>
+											<p class="text-xs text-gray-500 mb-2">{event.organizer}</p>
 										{/if}
 										{#if event.description}
 											<div class="mt-1 text-sm text-gray-600 mehr-lesen">
@@ -232,7 +232,7 @@
 										<span>{event.location || 'Online'}</span>
 									</div>
 									{#if event.organizer}
-										<p class="text-xs text-gray-400 mb-2">{event.organizer}</p>
+										<p class="text-xs text-gray-500 mb-2">{event.organizer}</p>
 									{/if}
 									{#if event.description}
 										<p class="text-sm text-gray-600 ">{event.description}</p>
@@ -305,7 +305,7 @@
 							{/if}
 						</div>
 						{#if program.funding_organization}
-							<p class="text-xs text-gray-400 mb-2">{program.funding_organization}</p>
+							<p class="text-xs text-gray-500 mb-2">{program.funding_organization}</p>
 						{/if}
 						{#if program.description}
 							<div class="mt-1 text-sm text-gray-600 mehr-lesen">
