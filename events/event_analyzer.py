@@ -363,6 +363,10 @@ VALIDATED EXTRACTION:
             structured_data.pop('start_time', None)
             structured_data.pop('end_time', None)
 
+            # Rename registration_link to match Directus field name
+            if 'registration_link' in structured_data:
+                structured_data['register_link'] = structured_data.pop('registration_link')
+
             # Add metadata
             structured_data["source"] = content.get("source_name", event_data.get("source_name", "Unknown"))
             if event_data.get("auto_approve"):
@@ -371,8 +375,8 @@ VALIDATED EXTRACTION:
             else:
                 structured_data["review_status"] = "pending"
             
-            # Add URL if available
-            if content.get("url") and not structured_data.get("website"):
+            # Source URL (from scraper) always takes priority as website
+            if content.get("url"):
                 structured_data["website"] = content.get("url")
 
             # Add token usage info
@@ -449,6 +453,11 @@ Primärfrage: Hat die Veranstaltung DIGITALEN/TECHNISCHEN Bezug?
 0-19:   Weder digital noch NPO-relevant
 
 Kosten sind KEIN Ausschlusskriterium. Im Zweifel: digital > NPO.
+
+LINKS:
+- registration_link = Anmelde-/Registrierungs-URL (Eventbrite, Eveeno, Formulare etc.)
+- website = Event-/Veranstaltungsseite (Detailseite mit Beschreibung)
+- URLs aus dem Text extrahieren, NICHT erfinden
 
 Nutze null für unbekannte Felder."""
     

@@ -97,7 +97,7 @@ def get_email_body(msg):
 
 SIGNATURE_MARKERS = re.compile(
     r'^[\s]*(?:'
-    r'--|'
+    r'-[\s-]*-|'
     r'___+|'
     r'Mit freundlichen Grüßen|'
     r'Viele Grüße|'
