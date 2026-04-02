@@ -55,6 +55,25 @@
 			"name": "ex:lab"
 		}
 	})}</script>`}
+
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "ItemList",
+		"name": "Digitalisierungsveranstaltungen für Nonprofits",
+		"description": "Webinare, Workshops und Veranstaltungen zu Digitalisierung für gemeinnützige Organisationen.",
+		"numberOfItems": data.events.length,
+		"itemListElement": data.events.map((event, i) => ({
+			"@type": "ListItem",
+			"position": i + 1,
+			"item": {
+				"@type": "Event",
+				"name": event.title,
+				"startDate": event.start_date,
+				"location": { "@type": "Place", "name": event.location || "Online" },
+				"organizer": { "@type": "Organization", "name": event.organizer || "" }
+			}
+		}))
+	})}</script>`}
 </svelte:head>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -472,6 +472,7 @@
     // Footer
     html += '<div class="dk-footer">';
     html += '<a href="' + DIGIKAL_URL + '" target="_blank" rel="noopener noreferrer">Alle Events auf digikal.org \u2192</a>';
+    html += '<span class="dk-powered">Daten von <a href="' + DIGIKAL_URL + '" target="_blank" rel="noopener noreferrer">digikal.org</a></span>';
     html += '</div>';
 
     this.root.innerHTML = html;
