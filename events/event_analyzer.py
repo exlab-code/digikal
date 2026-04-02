@@ -427,12 +427,26 @@ ORGANIZER vs. SPEAKER:
 - Keine Organisation im Text → aus der URL/Webseite ableiten (Domain-Name als Fallback)
 - NIE "Unbekannt", "null" oder "email-submit" als organizer
 
-TAGS (max 5, in tag_groups einordnen):
-- Allgemein und wiederverwendbar, nicht zu spezifisch
-- Akronyme: "KI" (nicht "Künstliche Intelligenz"), "DSGVO", "NGO"
-- Title Case: "Machine Learning", "Social Media"
-- "Online" als Tag bei virtuellen Events (zusätzlich zum Format-Tag)
-- "Kostenlos" als Tag wenn kostenlos
+TAG_GROUPS (max 5 Tags gesamt, aufgeteilt in die Kategorien):
+
+topic — BEVORZUGT aus dieser Liste waehlen (exakte Schreibweise!):
+  KI, Datenschutz, IT-Sicherheit, Digitalisierung, Digitale Kompetenzen,
+  Social Media, Fundraising, Daten, Barrierefreiheit, Nachhaltigkeit,
+  Inklusion, Ehrenamt, Engagement, Compliance, Recht, Kommunikation,
+  Projektmanagement, Buchhaltung, Zusammenarbeit, Strategie, Open Source,
+  Demokratie, Bildung, Gemeinwohl, Soziale Arbeit
+  Nur neue Tags wenn KEINER der obigen passt. NIE Synonyme verwenden:
+  "Künstliche Intelligenz" → "KI", "Cybersecurity" → "IT-Sicherheit",
+  "DSGVO" → "Datenschutz", "Digital Transformation" → "Digitalisierung",
+  "Data Science"/"Datenanalyse" → "Daten"
+
+format — NUR aus: Workshop, Webinar, Seminar, Konferenz, Barcamp, Fortbildung, Meetup, Zertifikatslehrgang
+  "Online" ZUSAETZLICH wenn virtuell
+
+audience — NUR aus: NGO, Vereine, Stiftungen, Ehrenamtliche, Fachkraefte, Fuehrungskraefte
+  NIE Synonyme: "NPOs"/"Non-Profit"/"Gemeinnützige Organisationen" → "NGO"
+
+cost — "Kostenlos" wenn kostenlos, sonst den Preis
 
 LOCATION:
 - "Online" bei virtuellen/digitalen Events
