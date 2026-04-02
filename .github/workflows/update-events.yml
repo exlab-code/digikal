@@ -36,6 +36,16 @@ jobs:
           DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
         run: python events/ics_import.py
 
+      - name: Run email import
+        env:
+          DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
+          DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          SUBMIT_IMAP_HOST: ${{ secrets.SUBMIT_IMAP_HOST }}
+          SUBMIT_IMAP_USER: ${{ secrets.SUBMIT_IMAP_USER }}
+          SUBMIT_IMAP_PASSWORD: ${{ secrets.SUBMIT_IMAP_PASSWORD }}
+        run: python events/email_submit.py
+
       - name: Run analyzer
         env:
           DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
