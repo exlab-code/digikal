@@ -7,7 +7,6 @@ This script imports events from ICS calendar files defined in config/ics_sources
 and adds them to the Directus database as unprocessed events.
 """
 import os
-import re
 import json
 import requests
 import hashlib
@@ -102,12 +101,6 @@ def parse_ics_file(ics_data, source_name, source_url, future_only=True):
             description = str(component.get('description', ''))
             location = str(component.get('location', ''))
             url = str(component.get('url') or '')
-
-            # If no URL property, try to extract one from the description
-            if not url and description:
-                url_match = re.search(r'https?://[^\s<>"\')\]]+', description)
-                if url_match:
-                    url = url_match.group(0).rstrip('.,;:')
 
             # Extract start date/time for filtering
             start_date = component.get('dtstart')
