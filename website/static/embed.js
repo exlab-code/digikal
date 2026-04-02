@@ -27,12 +27,12 @@
   var STYLES = `
     :host {
       display: block;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: inherit;
       color: #1f2937;
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: inherit; }
 
     .dk-container { max-width: 800px; margin: 0 auto; }
 
@@ -410,6 +410,7 @@
     // Header (event count only, no headline)
     html += '<div class="dk-header">';
     html += '<span class="dk-event-count">' + this.filteredEvents.length + ' Event' + (this.filteredEvents.length !== 1 ? 's' : '') + '</span>';
+    html += '<span class="dk-powered">Daten von <a href="' + DIGIKAL_URL + '" target="_blank" rel="noopener noreferrer">digikal.org</a></span>';
     html += '</div>';
 
     // Filters
@@ -472,7 +473,6 @@
     // Footer
     html += '<div class="dk-footer">';
     html += '<a href="' + DIGIKAL_URL + '" target="_blank" rel="noopener noreferrer">Alle Events auf digikal.org \u2192</a>';
-    html += '<span class="dk-powered">Daten von <a href="' + DIGIKAL_URL + '" target="_blank" rel="noopener noreferrer">digikal.org</a></span>';
     html += '</div>';
 
     this.root.innerHTML = html;
