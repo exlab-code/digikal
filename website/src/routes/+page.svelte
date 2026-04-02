@@ -68,9 +68,23 @@
 			"item": {
 				"@type": "Event",
 				"name": event.title,
+				"description": event.description || undefined,
 				"startDate": event.start_date,
-				"location": { "@type": "Place", "name": event.location || "Online" },
-				"organizer": { "@type": "Organization", "name": event.organizer || "" }
+				"endDate": event.end_date || undefined,
+				"eventAttendanceMode": (!event.location || event.location === 'Online')
+					? "https://schema.org/OnlineEventAttendanceMode"
+					: "https://schema.org/OfflineEventAttendanceMode",
+				"location": (!event.location || event.location === 'Online')
+					? { "@type": "VirtualLocation", "url": event.website || event.register_link || "https://digikal.org" }
+					: { "@type": "Place", "name": event.location },
+				"organizer": { "@type": "Organization", "name": event.organizer || "" },
+				"offers": {
+					"@type": "Offer",
+					"price": (!event.cost || event.cost === 'Kostenlos' || event.cost === '0') ? "0" : event.cost,
+					"priceCurrency": "EUR",
+					"availability": "https://schema.org/InStock",
+					"url": event.website || event.register_link || undefined
+				}
 			}
 		}))
 	})}</script>`}
