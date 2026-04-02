@@ -455,8 +455,9 @@ Primärfrage: Hat die Veranstaltung DIGITALEN/TECHNISCHEN Bezug?
 Kosten sind KEIN Ausschlusskriterium. Im Zweifel: digital > NPO.
 
 LINKS:
-- registration_link = Anmelde-/Registrierungs-URL (Eventbrite, Eveeno, Formulare etc.)
-- website = Event-/Veranstaltungsseite (Detailseite mit Beschreibung)
+- website = Wo man mehr über diese Veranstaltung erfährt (Event-Detailseite, Ankündigung). Kann auch die Anmeldeseite sein, wenn es keine separate Infoseite gibt
+- registration_link = Wo man sich anmeldet (Eventbrite, Eveeno, Guestoo, Formulare etc.). Kann identisch mit website sein
+- Beide Felder beziehen sich NUR auf diese Veranstaltung. Andere URLs im Text (Lernmaterial, Blogs, Kontaktseiten, allgemeine Organisationswebseiten) ignorieren
 - URLs aus dem Text extrahieren, NICHT erfinden
 
 Nutze null für unbekannte Felder."""
