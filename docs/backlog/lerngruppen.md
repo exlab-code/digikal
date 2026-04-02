@@ -7,12 +7,15 @@ Curated peer learning groups for nonprofit professionals. DigiKal already aggreg
 ## Core concept
 
 - **Time-boxed**: 3 months per sprint
+- **Rolling**: no fixed start dates — a new group forms whenever enough people have signed up for a topic. Groups launch throughout the year
 - **Small groups**: 5-8 people
 - **Topic-based**: e.g. "KI fuer Nonprofits", "Datenschutz"
 - **Self-organized**: no facilitator from DigiKal, groups run themselves
 - **Goal-oriented**: each participant has a personal project (e.g. "implement one KI tool in my org"). Graduation/showcase at the end
 
 Events are fuel, not curriculum. The real learning happens in the group conversations and personal projects between events.
+
+**Multiplier effect**: 8 people, 5 events per month. Each person attends 1-2 and reports back to the group. You get the essence of all events without attending everything yourself. Like a reading circle — not everyone reads every book, but at the end everyone knows the key ideas.
 
 ## How it works
 
@@ -90,8 +93,66 @@ Directus collections needed:
 - **KI fuer Nonprofits** — high demand, lots of events
 - **Datenschutz** — everyone needs it, steady event supply
 
+## Example sprint: KI fuer Nonprofits (April–Juni 2026)
+
+Based on actual events in DigiKal. ~30 KI-related events in 3 months, almost all free and online.
+
+**Ziel**: Jede/r setzt ein konkretes KI-Tool in der eigenen Organisation ein.
+
+### Monat 1: Orientieren (April)
+*"Was gibt's, was passt zu mir?"*
+
+Empfohlene Events:
+- 14.04 — Datenschutzkonform mit KI arbeiten (Haus des Stiftens)
+- 21.04 — Der neue Vereinsassistent: KI-Einstieg (Aktion Zivilcourage)
+- 21.04 — Praesentationen mit KI erstellen (Haus des Stiftens)
+- 23.04 — MCP: Wie der neue Standard KI mit Daten verbindet (Civic Data Community)
+- 29.04 — Austauschtreffen KI fuers Gemeinwohl (Civic Data Community)
+
+Gruppenmeetings:
+1. Vorstellung, Ziele, wo steht ihr? Jede/r formuliert ein konkretes Vorhaben
+2. Welche Events habt ihr besucht? Was habt ihr mitgenommen? Erstes Tool ausprobiert?
+
+### Monat 2: Ausprobieren (Mai)
+*"Ich mach das jetzt einfach mal"*
+
+Empfohlene Events:
+- 05.05 — Texte mit KI zu Posts/Podcasts/Erklaervideos (Haus des Stiftens)
+- 05.05 — Foerderantraege mit KI meistern (Aktion Zivilcourage)
+- 21.05 — Externe Kommunikation & Freiwilligengewinnung mit KI (Haus des Stiftens)
+- 21.05 — Datenschutz und Generative KI (Civic Data Community)
+- 27.05 — Austauschtreffen KI fuers Gemeinwohl (Civic Data Community)
+- 28.05 — Digital Ordnung schaffen, KI sinnvoll nutzen (Open Transfer, Hamburg)
+
+Gruppenmeetings:
+3. Fortschritt am eigenen Projekt. Wo hakt's? Gruppe hilft Gruppe
+4. Was funktioniert, was nicht? Erfahrungen teilen
+
+### Monat 3: Vertiefen & Abschliessen (Juni)
+*"Wie mache ich das nachhaltig?"*
+
+Empfohlene Events:
+- 09.06 — KI und Macht: Wer steckt dahinter? (Haus des Stiftens)
+- 11.06 — KI-Richtlinie entwickeln (Haus des Stiftens)
+- 11.06 — EU AI Act Einfuehrung (CorrelAid)
+- 11.06 — Civic Data Camp Erfurt (Barcamp — wer kann, faehrt hin!)
+- 18.06 — Copilot KI-Assistenten (Haus des Stiftens)
+- 18.06 — Rechtssichere KI-Integration (Haus des Stiftens)
+- 23.06 — KI-Werkzeuge zur Bild- und Videoerstellung (Haus des Stiftens)
+
+Gruppenmeetings:
+5. Generalprobe — jede/r stellt vor, was sie/er gemacht hat
+6. Graduation/Showcase: Was habt ihr erreicht? Was wuerdet ihr eurem vergangenen Ich raten?
+
+### Meeting-Struktur (je 60 Min)
+- 5 Min: Check-in
+- 30 Min: Event-Berichte (jede/r 3 Min: welches Event besucht, Top-Takeaways). Notizen auf Miro-Board in Spalte pro Event
+- 15 Min: Projektupdate — wo stehe ich, wo brauche ich Hilfe?
+- 10 Min: Naechste Schritte, wer besucht welches Event?
+
 ## Open questions
 
+- Rolling vs. fixed start dates: pure rolling (group forms when 8 people are ready) is flexible but lacks urgency. Fixed batches ("next KI group starts May 1") create commitment through deadlines. Could do both: signup is always open, but announce upcoming start dates to create urgency
 - How to handle dropouts mid-sprint? Minimum viable group size?
 - Should there be a light application/screening to ensure commitment?
 - How to handle the graduation — public showcase or group-internal?
