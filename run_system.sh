@@ -15,6 +15,13 @@ case "$1" in
     scrape)
         echo "Running scraper..."
         python events/event_scraper.py
+        echo "Running individual scrapers..."
+        python events/scrapers/scrape_sigu.py
+        python events/scrapers/scrape_socialnet.py
+        python events/scrapers/scrape_kgst.py
+        python events/scrapers/scrape_negz.py
+        python events/scrapers/scrape_paritaetische.py
+        python events/scrapers/scrape_hiig.py
         ;;
     ics-import)
         echo "Running ICS import..."
@@ -32,6 +39,18 @@ case "$1" in
         echo "Running full pipeline..."
         python events/event_scraper.py > events/logs/scraper.log 2>&1
         echo "Scraper done."
+        python events/scrapers/scrape_sigu.py > events/logs/scrape_sigu.log 2>&1
+        echo "SIGU scraper done."
+        python events/scrapers/scrape_socialnet.py > events/logs/scrape_socialnet.log 2>&1
+        echo "socialnet scraper done."
+        python events/scrapers/scrape_kgst.py > events/logs/scrape_kgst.log 2>&1
+        echo "KGSt scraper done."
+        python events/scrapers/scrape_negz.py > events/logs/scrape_negz.log 2>&1
+        echo "NEGZ scraper done."
+        python events/scrapers/scrape_paritaetische.py > events/logs/scrape_paritaetische.log 2>&1
+        echo "Paritätische Akademie scraper done."
+        python events/scrapers/scrape_hiig.py > events/logs/scrape_hiig.log 2>&1
+        echo "HIIG scraper done."
         python events/ics_import.py > events/logs/ics-import.log 2>&1
         echo "ICS import done."
         python events/event_analyzer.py > events/logs/analysis.log 2>&1

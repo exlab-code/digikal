@@ -30,6 +30,18 @@ jobs:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         run: python events/event_scraper.py
 
+      - name: Run individual scrapers
+        env:
+          DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
+          DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
+        run: |
+          python events/scrapers/scrape_sigu.py
+          python events/scrapers/scrape_socialnet.py
+          python events/scrapers/scrape_kgst.py
+          python events/scrapers/scrape_negz.py
+          python events/scrapers/scrape_paritaetische.py
+          python events/scrapers/scrape_hiig.py
+
       - name: Run ICS import
         env:
           DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
