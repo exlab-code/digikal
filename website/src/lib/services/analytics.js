@@ -10,10 +10,3 @@ export function trackEvent(eventName, props = {}) {
 		umami.track(eventName, props);
 	}
 }
-
-export function trackPageView(url, props = {}) {
-	if (!browser) return;
-	if (typeof umami !== 'undefined') {
-		umami.track((p) => ({ ...p, url }));
-	}
-}
