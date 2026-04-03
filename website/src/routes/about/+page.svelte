@@ -187,7 +187,7 @@ Website  iCal-Abo             Cursor, GPTs     (SvelteKit)</pre>
 			<div>
 				<h3 class="font-medium text-gray-700 mb-1">3. Webanalyse (Umami)</h3>
 				<p>
-					Wir nutzen <a href="https://umami.is" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">Umami</a>, eine datenschutzfreundliche, selbst gehostete Webanalyse-Software auf einem Hetzner-Server in Nürnberg (Deutschland). Umami speichert keine Cookies, erhebt keine personenbezogenen Daten und erstellt keine geräteübergreifenden Profile. Es werden ausschließlich anonymisierte Seitenaufrufe und Events erfasst. Alle Daten verbleiben auf dem deutschen Server. Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.
+					Wir nutzen <a href="https://umami.is" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">Umami</a>, eine datenschutzfreundliche, selbst gehostete Webanalyse-Software auf einem Hetzner-Server in Nürnberg (Deutschland). Umami speichert keine Cookies, erhebt keine personenbezogenen Daten und erstellt keine geräteübergreifenden Profile. Es werden ausschließlich anonymisierte Seitenaufrufe erfasst. Zusätzlich erfassen wir anonymisierte Klick-Events auf Veranstaltungslinks (Titel, Quelle und Ziel-URL des Events) sowie Newsletter-Anmeldungen (ohne E-Mail-Adresse). Diese Events enthalten keine personenbezogenen Daten. Alle Daten verbleiben auf dem deutschen Server. Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.
 				</p>
 			</div>
 
