@@ -38,10 +38,19 @@
     updateFilters({ tags: updated });
   }
 
+  function trackClick() {
+    if (link && typeof umami !== 'undefined') {
+      umami.track('event-click', {
+        title: event.title,
+        source: event.source || event.organizer,
+        url: link,
+      });
+    }
+  }
 
 </script>
 
-<svelte:element this={link ? 'a' : 'div'} href={link || undefined} target={link ? '_blank' : undefined} rel={link ? 'noopener noreferrer' : undefined} data-umami-event={link ? 'event-click' : undefined} data-umami-event-title={link ? event.title : undefined} data-umami-event-source={link ? (event.source || event.organizer) : undefined} class="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg hover:border-primary-300 transition-all group/card no-underline max-w-3xl">
+<svelte:element this={link ? 'a' : 'div'} href={link || undefined} target={link ? '_blank' : undefined} rel={link ? 'noopener noreferrer' : undefined} on:click={trackClick} class="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg hover:border-primary-300 transition-all group/card no-underline max-w-3xl">
   <div class="flex items-start gap-4">
     <!-- Date badge -->
     <div class="bg-primary-50 text-primary-700 px-3 py-2 rounded-lg text-center min-w-[3.5rem] flex-shrink-0">
