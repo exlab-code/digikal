@@ -288,7 +288,7 @@ class GPT4MiniProcessor:
 
             # Call GPT-4o Mini with Instructor for structured output and automatic validation
             event = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4.1-mini",
                 response_model=EventData,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -429,23 +429,9 @@ ORGANIZER vs. SPEAKER:
 
 TAG_GROUPS (max 5 Tags gesamt, aufgeteilt in die Kategorien):
 
-topic — BEVORZUGT aus dieser Liste waehlen (exakte Schreibweise!):
-  KI, Datenschutz, IT-Sicherheit, Digitalisierung, Digitale Kompetenzen,
-  Social Media, Fundraising, Daten, Barrierefreiheit, Nachhaltigkeit,
-  Inklusion, Ehrenamt, Engagement, Compliance, Recht, Kommunikation,
-  Projektmanagement, Buchhaltung, Zusammenarbeit, Strategie, Open Source,
-  Demokratie, Bildung, Gemeinwohl, Soziale Arbeit
-  Nur neue Tags wenn KEINER der obigen passt. NIE Synonyme verwenden:
-  "Künstliche Intelligenz" → "KI", "Cybersecurity" → "IT-Sicherheit",
-  "DSGVO" → "Datenschutz", "Digital Transformation" → "Digitalisierung",
-  "Data Science"/"Datenanalyse" → "Daten"
-
-format — NUR aus: Workshop, Webinar, Seminar, Konferenz, Barcamp, Fortbildung, Meetup, Zertifikatslehrgang
-  "Online" ZUSAETZLICH wenn virtuell
-
-audience — NUR aus: NGO, Vereine, Stiftungen, Ehrenamtliche, Fachkraefte, Fuehrungskraefte
-  NIE Synonyme: "NPOs"/"Non-Profit"/"Gemeinnützige Organisationen" → "NGO"
-
+topic — Themen-Tags frei vergeben (z.B. KI, Datenschutz, Fundraising, Nachhaltigkeit)
+format — Veranstaltungsformat (z.B. Workshop, Webinar, Konferenz). "Online" ZUSAETZLICH wenn virtuell
+audience — Zielgruppe (z.B. NGO, Vereine, Ehrenamtliche)
 cost — "Kostenlos" wenn kostenlos, sonst den Preis
 
 LOCATION:
