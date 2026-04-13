@@ -37,15 +37,69 @@ PAGE_URL = "https://akademie.org/themen/digitalisierung/"
 COLLECTION = "scraped_data"
 
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; digikal-scraper/1.0)",
+    "Accept-Language": "de-DE,de;q=0.9",
+}
+
+DETAIL_SECTIONS = (
+    ("Auf einen Blick", ".event-at-a-glance"),
+    ("Schwerpunkte", ".event-emphasis"),
+    ("Beschreibung", ".event-description"),
+    ("Termine", ".event-dates"),
+    ("Dozierende", ".event-lecturers"),
+    ("Anmeldung", ".event-registration"),
+)
+
+
 def fetch_page() -> str:
     """Fetch the Paritätische Akademie digitalization events page."""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; digikal-scraper/1.0)",
-        "Accept-Language": "de-DE,de;q=0.9",
-    }
-    response = requests.get(PAGE_URL, headers=headers, timeout=30)
+    response = requests.get(PAGE_URL, headers=HEADERS, timeout=30)
     response.raise_for_status()
     return response.text
+
+
+def fetch_detail(url: str, is_online: bool) -> tuple[str, str]:
+    """Fetch the event detail page and return (detail_text, location).
+
+    Args:
+        url: Full URL to the event detail page.
+        is_online: Whether the listing marked the event as online.
+
+    Returns:
+        (detail_text, location) — empty strings on failure.
+    """
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        logger.warning("Failed to fetch detail page %s: %s", url, exc)
+        return "", ""
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    for tag in soup.select("style, script, noscript"):
+        tag.decompose()
+
+    parts: list[str] = []
+    for label, selector in DETAIL_SECTIONS:
+        el = soup.select_one(selector)
+        if not el:
+            continue
+        text = el.get_text(separator="\n", strip=True)
+        if not text:
+            continue
+        parts.append(f"## {label}\n{text}")
+
+    detail_text = "\n\n".join(parts)
+
+    location = "Online" if is_online else ""
+    venue_el = soup.select_one(".event-registration .event-location")
+    if venue_el:
+        venue = venue_el.get_text(separator=" ", strip=True)
+        if venue:
+            location = venue
+
+    return detail_text, location
 
 
 def parse_events(html: str) -> list[dict]:
@@ -95,6 +149,7 @@ def parse_events(html: str) -> list[dict]:
             "start_date": date_str,
             "end_date": date_str,
             "location": location,
+            "is_online": is_online,
             "organizer": "Paritätische Akademie Berlin",
             "description": summary,
             "tags": [t.strip() for t in tags.split(",") if t.strip()],
@@ -107,10 +162,23 @@ def parse_events(html: str) -> list[dict]:
 
 
 def scrape_all() -> list[dict]:
-    """Scrape all events from the digitalization page."""
+    """Scrape all events from the digitalization page, enriched with detail pages."""
     logger.info("Fetching Paritätische Akademie page...")
     html = fetch_page()
     events = parse_events(html)
+    logger.info(f"Listings found: {len(events)} — fetching detail pages...")
+
+    for event in events:
+        if not event["url"]:
+            continue
+        logger.debug("Fetching detail: %s", event["url"])
+        detail_text, location = fetch_detail(event["url"], event.get("is_online", False))
+        event["detail_text"] = detail_text
+        if location:
+            event["location"] = location
+        if detail_text:
+            event["listing_text"] = f"{event['listing_text']}\n\n{detail_text}"
+
     logger.info(f"Total events scraped: {len(events)}")
     return events
 
