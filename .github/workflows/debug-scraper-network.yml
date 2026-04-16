@@ -1,0 +1,106 @@
+name: Debug Scraper Network
+
+# Throwaway diagnostic: runs curl/DNS/Python probes from a GitHub-hosted runner
+# against the two flaky scraper hosts (sigu-plattform.de, www.kgst.de) to
+# distinguish IPv6 routing issues from WAF/firewall drops.
+# Delete this file once the root cause is confirmed.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Runner identity
+        run: |
+          echo "=== Runner egress IPv4 ==="
+          curl -s -4 --max-time 10 https://api.ipify.org || echo "(no v4)"
+          echo
+          echo "=== Runner egress IPv6 ==="
+          curl -s -6 --max-time 10 https://api64.ipify.org || echo "(no v6 egress)"
+          echo
+          echo "=== Default IPv6 route ==="
+          ip -6 route show default || true
+
+      - name: DNS for both hosts
+        run: |
+          for host in sigu-plattform.de www.kgst.de; do
+            echo "=== $host ==="
+            getent ahosts "$host" || echo "(getent failed)"
+            echo "--- A ---"
+            dig +short "$host" A
+            echo "--- AAAA ---"
+            dig +short "$host" AAAA
+            echo
+          done
+
+      - name: curl sigu (default, v4, v6)
+        continue-on-error: true
+        run: |
+          URL="https://sigu-plattform.de/wp-json/tribe/events/v1/events?page=1&per_page=1&status=publish"
+          for flag in "" "-4" "-6"; do
+            echo "=== curl $flag ==="
+            curl -sS $flag -o /dev/null --max-time 25 \
+              -w "status=%{http_code} time=%{time_total}s remote_ip=%{remote_ip}\n" \
+              "$URL" || echo "curl exit=$?"
+            echo
+          done
+
+      - name: curl kgst (default, v4, verbose on failure)
+        continue-on-error: true
+        run: |
+          URL="https://www.kgst.de/veranstaltungskalender?delta=20&start=1"
+          UA="Mozilla/5.0 (compatible; digikal-scraper/1.0)"
+          echo "=== curl default ==="
+          curl -sS -A "$UA" -o /dev/null --max-time 35 \
+            -w "status=%{http_code} time=%{time_total}s remote_ip=%{remote_ip}\n" \
+            "$URL" || echo "default exit=$?"
+          echo
+          echo "=== curl -4 verbose (first 40 lines) ==="
+          curl -v -4 -A "$UA" -o /dev/null --max-time 35 "$URL" 2>&1 | head -40 || true
+          echo
+          echo "=== curl with real Chrome UA ==="
+          curl -sS -o /dev/null --max-time 35 \
+            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36" \
+            -w "status=%{http_code} time=%{time_total}s remote_ip=%{remote_ip}\n" \
+            "$URL" || echo "chrome-ua exit=$?"
+
+      - name: Python requests probe (matches scraper code paths)
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import socket, time, traceback
+          import requests
+
+          def probe(label, url, **kwargs):
+              print(f"=== {label} ===")
+              t0 = time.time()
+              try:
+                  r = requests.get(url, timeout=30, **kwargs)
+                  print(f"OK status={r.status_code} bytes={len(r.content)} elapsed={time.time()-t0:.2f}s")
+              except Exception as e:
+                  print(f"FAIL elapsed={time.time()-t0:.2f}s type={type(e).__name__}")
+                  print(f"  msg={e}")
+
+          probe(
+              "sigu default",
+              "https://sigu-plattform.de/wp-json/tribe/events/v1/events?page=1&per_page=1&status=publish",
+          )
+
+          # Force IPv4 by monkey-patching getaddrinfo
+          orig = socket.getaddrinfo
+          def v4only(host, port, *a, **kw):
+              return orig(host, port, socket.AF_INET, *a[1:], **kw)
+          socket.getaddrinfo = v4only
+          probe(
+              "sigu IPv4-forced",
+              "https://sigu-plattform.de/wp-json/tribe/events/v1/events?page=1&per_page=1&status=publish",
+          )
+
+          probe(
+              "kgst IPv4-forced scraper-UA",
+              "https://www.kgst.de/veranstaltungskalender?delta=20&start=1",
+              headers={"User-Agent": "Mozilla/5.0 (compatible; digikal-scraper/1.0)"},
+          )
+          PY
