@@ -128,7 +128,11 @@ def scrape_all(max_pages: int = 20) -> list[dict]:
 
     while page <= max_pages:
         logger.info(f"Fetching page {page}...")
-        data = fetch_events_page(page=page)
+        try:
+            data = fetch_events_page(page=page)
+        except Exception as e:
+            logger.error(f"Failed to fetch page {page}: {e}")
+            break
 
         events = data.get("events", [])
         if not events:
