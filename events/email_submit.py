@@ -58,10 +58,15 @@ REQUEST_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (compatible; DigiKal/1.0; +https://www.digikal.org)'
 }
 
-# Trusted sender domains/addresses — events from these get auto-approved
-TRUSTED_SENDERS = {
-    'buergermut.de',
+# Trusted sender domains → hardcoded organizer name.
+# Needed when the submitted URL is a booking/platform page (e.g. pretix.eu)
+# where the scraped content carries the platform's branding rather than the
+# real organizer, causing the downstream LLM to guess "pretix" etc.
+# Events from these senders also get auto-approved.
+TRUSTED_ORGANIZERS = {
+    'buergermut.de': 'Stiftung Bürgermut',
 }
+TRUSTED_SENDERS = set(TRUSTED_ORGANIZERS.keys())
 
 
 def decode_mime_header(raw):
@@ -152,14 +157,29 @@ def sender_to_source(from_header):
     return 'email-submit'
 
 
-def is_trusted_sender(from_header):
-    """Check if the sender is a trusted source for auto-approval."""
+def _sender_domain(from_header):
     raw = decode_mime_header(from_header)
     email_match = re.search(r'[\w.-]+@([\w.-]+)', raw)
-    if not email_match:
+    return email_match.group(1).lower() if email_match else None
+
+
+def is_trusted_sender(from_header):
+    """Check if the sender is a trusted source for auto-approval."""
+    domain = _sender_domain(from_header)
+    if not domain:
         return False
-    domain = email_match.group(1).lower()
     return any(domain == d or domain.endswith('.' + d) for d in TRUSTED_SENDERS)
+
+
+def trusted_organizer(from_header):
+    """Return the hardcoded organizer name for a trusted sender, or None."""
+    domain = _sender_domain(from_header)
+    if not domain:
+        return None
+    for trusted_domain, organizer in TRUSTED_ORGANIZERS.items():
+        if domain == trusted_domain or domain.endswith('.' + trusted_domain):
+            return organizer
+    return None
 
 
 def scrape_url(url):
@@ -194,7 +214,7 @@ def scrape_url(url):
         return None
 
 
-def create_scraped_entry(url, raw_content, source_name, trusted=False):
+def create_scraped_entry(url, raw_content, source_name, trusted=False, organizer_override=None):
     """Create a scraped_data entry in Directus with scraped page content."""
     content_hash = hashlib.md5(raw_content.encode()).hexdigest()
 
@@ -210,17 +230,22 @@ def create_scraped_entry(url, raw_content, source_name, trusted=False):
             logger.info(f'  Skipped (duplicate): {url}')
             return None
 
+    payload = {
+        'url': url,
+        'source_name': source_name,
+        'detail_text': raw_content,
+        'submitted_via': 'email',
+    }
+    if organizer_override:
+        # Picked up in event_analyzer.py to overwrite the LLM-inferred organizer.
+        payload['organizer_override'] = organizer_override
+
     data = {
         'url': url,
         'source_name': 'email-submit',
         'content_hash': content_hash,
         'auto_approve': trusted,
-        'raw_content': json.dumps({
-            'url': url,
-            'source_name': source_name,
-            'detail_text': raw_content,
-            'submitted_via': 'email',
-        }, ensure_ascii=False),
+        'raw_content': json.dumps(payload, ensure_ascii=False),
         'scraped_at': datetime.now().isoformat(),
         'processed': False,
         'processing_status': 'pending'
@@ -277,10 +302,14 @@ def process_inbox(dry_run=False):
         sender = msg.get('From', '')
         source_name = sender_to_source(sender)
         trusted = is_trusted_sender(sender)
+        organizer_override = trusted_organizer(sender)
         body = get_email_body(msg)
         urls = extract_urls(body)
 
-        logger.info(f'Email from {source_name}: "{subject}" — {len(urls)} URL(s) found{" [TRUSTED]" if trusted else ""}')
+        trust_tag = ''
+        if trusted:
+            trust_tag = f' [TRUSTED → {organizer_override}]' if organizer_override else ' [TRUSTED]'
+        logger.info(f'Email from {source_name}: "{subject}" — {len(urls)} URL(s) found{trust_tag}')
 
         for url in urls:
             if dry_run:
@@ -291,7 +320,10 @@ def process_inbox(dry_run=False):
                     if not raw_content:
                         logger.warning(f'  No content scraped from: {url}')
                         continue
-                    item_id = create_scraped_entry(url, raw_content, source_name, trusted=trusted)
+                    item_id = create_scraped_entry(
+                        url, raw_content, source_name,
+                        trusted=trusted, organizer_override=organizer_override,
+                    )
                     if item_id:
                         logger.info(f'  Created scraped_data #{item_id} for: {url}')
                         total_urls += 1

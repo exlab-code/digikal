@@ -367,6 +367,13 @@ VALIDATED EXTRACTION:
             if 'registration_link' in structured_data:
                 structured_data['register_link'] = structured_data.pop('registration_link')
 
+            # Authoritative organizer override from trusted email submitters
+            # (e.g. Stiftung Bürgermut submitting Pretix URLs where the scraped
+            # page carries the platform's branding, not the real organizer).
+            organizer_override = content.get("organizer_override")
+            if organizer_override:
+                structured_data["organizer"] = organizer_override
+
             # Add metadata
             structured_data["source"] = content.get("source_name", event_data.get("source_name", "Unknown"))
             if event_data.get("auto_approve"):
