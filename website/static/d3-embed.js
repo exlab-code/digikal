@@ -5,13 +5,64 @@
   var API_URL = 'https://calapi.buerofalk.de/items/events';
   var API_TOKEN = 'IXya-sE0fEPTKsHDqYLy7acTyilIpUdC';
   var DIGIKAL_URL = 'https://www.digikal.org';
+  var TAG_CLUSTERS_URL = DIGIKAL_URL + '/tag-clusters.json';
+
+  // === Tag cluster state (populated from /tag-clusters.json on init) ===
+  var CLUSTER_KEYS_SET = {};
+  var MEMBER_TO_CLUSTER = {};
+  var LOWER_DROP = {};
+  var clustersLoadedPromise = null;
+
+  function loadClusters() {
+    if (clustersLoadedPromise) return clustersLoadedPromise;
+    clustersLoadedPromise = fetch(TAG_CLUSTERS_URL)
+      .then(function(res) {
+        if (!res.ok) throw new Error('cluster fetch ' + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        (data.drop || []).forEach(function(t) { LOWER_DROP[t.toLowerCase()] = true; });
+        (data.clusters || []).forEach(function(c) {
+          CLUSTER_KEYS_SET[c.key] = true;
+          (c.members || []).forEach(function(m) {
+            MEMBER_TO_CLUSTER[m.toLowerCase()] = c.key;
+          });
+        });
+      })
+      .catch(function(err) {
+        // Degrade gracefully: without a cluster map, tags pass through raw.
+        console.warn('DigiKal embed: cluster map unavailable, showing raw tags', err);
+      });
+    return clustersLoadedPromise;
+  }
+
+  function clusterTag(raw) {
+    if (!raw) return null;
+    var key = String(raw).toLowerCase().trim();
+    if (LOWER_DROP[key]) return null;
+    return MEMBER_TO_CLUSTER[key] || raw;
+  }
+
+  function getDisplayTopics(ev) {
+    var raw = (ev.tag_groups && ev.tag_groups.topic) || [];
+    var seen = {};
+    var out = [];
+    for (var i = 0; i < raw.length; i++) {
+      var c = clusterTag(raw[i]);
+      if (!c || seen[c]) continue;
+      seen[c] = true;
+      out.push(c);
+    }
+    return out;
+  }
 
   var MONTH_NAMES = ['Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
   var MONTH_NAMES_LONG = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 
-  // Sponsor color overrides (organizer name → accent color)
+  // Sponsor color overrides (organizer substring → accent color)
   var SPONSOR_COLORS = {
-    'd3': '#fed220'
+    'd3': '#fed220',
+    'bürgermut': '#fed220'
   };
 
   function getSponsorColor(organizer) {
@@ -24,11 +75,14 @@
   }
 
   // === CSS ===
+  // Themed for so-geht-digital.de (D3): Montserrat inherited from host page,
+  // near-black #232427 text, light-grey #eceef1 / #c5c8cf, yellow #fed220
+  // reserved as accent for Bürgermut/d3 sponsor events.
   var STYLES = `
     :host {
       display: block;
       font-family: inherit;
-      color: #1f2937;
+      color: #232427;
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
@@ -38,25 +92,28 @@
 
     /* Header */
     .dk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
-    .dk-event-count { font-size: 0.85rem; color: #6b7280; }
+    .dk-event-count { font-size: 0.85rem; color: #53565d; }
 
-    /* Filters */
+    /* Filters — D3 outlined style: 2px border, 1.5rem radius */
     .dk-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     .dk-select {
-      padding: 8px 32px 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
+      padding: 0.5rem 2.25rem 0.5rem 1rem;
+      border: 2px solid #232427;
+      border-radius: 1.5rem;
       font-size: 0.875rem;
-      color: #374151;
-      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center;
+      font-weight: 600;
+      color: #232427;
+      background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23232427' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center;
       appearance: none;
       cursor: pointer;
       width: 170px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      transition: background-color 0.3s, color 0.3s;
     }
-    .dk-select:focus { outline: none; border-color: #3178ff; box-shadow: 0 0 0 3px rgba(49,120,255,0.15); }
+    .dk-select:hover { background: #232427 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center; color: #fff; }
+    .dk-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(35,36,39,0.2); }
 
     /* Event list */
     .dk-events { display: flex; flex-direction: column; gap: 14px; }
@@ -68,107 +125,113 @@
       gap: 16px;
       align-items: flex-start;
       background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
+      border: 1px solid #c5c8cf;
+      border-radius: 1.5rem;
       padding: 16px;
       text-decoration: none;
       color: inherit;
       transition: box-shadow 0.2s, border-color 0.2s;
     }
-    .dk-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: #93c5fd; }
-    .dk-card:hover .dk-card-title { color: #3178ff; }
+    .dk-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #232427; }
+    .dk-card:hover .dk-card-title { color: #232427; }
 
-    /* Date badge */
+    /* Date badge — light grey with black text (blends with D3 site) */
     .dk-date-badge {
-      background: #eff6ff;
-      color: #1d4ed8;
+      background: #eceef1;
+      color: #232427;
       min-width: 56px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 8px 6px;
-      border-radius: 8px;
+      border-radius: 1rem;
       text-align: center;
       flex-shrink: 0;
     }
     .dk-date-day { font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
     .dk-date-month { font-size: 0.7rem; font-weight: 500; }
-    .dk-date-multi { font-size: 0.6rem; margin-top: 2px; color: #3b82f6; }
+    .dk-date-multi { font-size: 0.6rem; margin-top: 2px; color: #53565d; }
 
-    /* Sponsor date badge */
-    .dk-card--sponsor .dk-date-badge { background: #fed220; color: #111827; }
-    .dk-card--sponsor .dk-date-multi { color: #111827; }
+    /* Sponsor card — D3 yellow accent for Bürgermut / d3 events */
+    .dk-card--sponsor .dk-date-badge { background: #fed220; color: #232427; }
+    .dk-card--sponsor .dk-date-multi { color: #232427; }
     .dk-card--sponsor:hover { border-color: #fed220; }
-    .dk-card--sponsor:hover .dk-card-title { color: #b45309; }
+    .dk-card--sponsor:hover .dk-card-title { color: #232427; }
 
     /* Card body */
     .dk-card-body { flex: 1; min-width: 0; }
     .dk-card-title {
       font-size: 1rem;
-      font-weight: 600;
-      color: #111827;
+      font-weight: 700;
+      color: #232427;
       margin-bottom: 4px;
       transition: color 0.15s;
     }
 
     /* Meta row */
-    .dk-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.8rem; color: #6b7280; margin-bottom: 8px; }
+    .dk-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.8rem; color: #53565d; margin-bottom: 8px; }
     .dk-meta-item { display: flex; align-items: center; gap: 3px; }
-    .dk-online { color: #3178ff; font-weight: 500; }
-    .dk-free { color: #059669; font-weight: 500; }
+    .dk-online { color: #232427; font-weight: 600; }
+    .dk-free { color: #232427; font-weight: 600; }
 
     /* Description */
     .dk-desc {
       font-size: 0.8rem;
-      color: #6b7280;
+      color: #53565d;
       margin-bottom: 8px;
     }
 
-    /* Topic tags */
+    /* Topic tags — neutral pills by default, yellow for sponsor cards */
     .dk-topics { display: flex; flex-wrap: wrap; gap: 4px; }
     .dk-category {
       display: inline-block;
       font-size: 0.7rem;
-      background: #eef5ff;
-      color: #3178ff;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 500;
+      background: #eceef1;
+      color: #232427;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-weight: 600;
     }
-    .dk-card--sponsor .dk-category { background: #fef9e7; color: #92400e; }
+    .dk-card--sponsor .dk-category { background: #fef3bf; color: #232427; }
 
     /* Sponsor badge */
     .dk-sponsor-badge {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 10px;
+      right: 10px;
       background: #fed220;
-      color: #111827;
+      color: #232427;
       font-size: 0.65rem;
       font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 6px;
-      letter-spacing: 0.02em;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
     .dk-card--sponsor .dk-card-title { padding-right: 70px; }
 
-    /* Load more */
+    /* Load more — D3 outlined button: 2px border, 1.5rem radius, uppercase, fills on hover */
     .dk-load-more {
       display: block;
       width: 100%;
-      padding: 10px;
-      margin-top: 16px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
+      padding: 0.75rem 1.5rem;
+      margin-top: 1.5rem;
+      background: transparent;
+      border: 2px solid #232427;
+      border-radius: 1.5rem;
       font-size: 0.875rem;
-      color: #374151;
+      font-weight: 600;
+      color: #232427;
       cursor: pointer;
       text-align: center;
-      transition: background 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.45;
+      transition: background-color 0.3s, border-color 0.3s, color 0.3s;
     }
-    .dk-load-more:hover { background: #f3f4f6; }
+    .dk-load-more:hover,
+    .dk-load-more:focus { background-color: #232427 !important; color: #fff !important; border-color: #232427 !important; }
 
     /* Footer */
     .dk-footer {
@@ -177,29 +240,31 @@
       justify-content: space-between;
       margin-top: 20px;
       padding-top: 14px;
-      border-top: 1px solid #e5e7eb;
+      border-top: 1px solid #c5c8cf;
       font-size: 0.8rem;
       flex-wrap: wrap;
       gap: 8px;
     }
-    .dk-footer a { color: #3178ff; text-decoration: none; font-weight: 500; }
-    .dk-footer a:hover { text-decoration: underline; }
-    .dk-powered { color: #9ca3af; }
+    .dk-footer a { color: #232427; text-decoration: none; font-weight: 600; border-bottom: 2px solid #fed220; }
+    .dk-footer a:hover { background: #fed220; }
+    .dk-powered { color: #93969e; }
+    .dk-powered a { color: #232427; text-decoration: none; border-bottom: 1px solid #c5c8cf; }
+    .dk-powered a:hover { border-bottom-color: #fed220; }
 
     /* Loading & error */
-    .dk-loading { text-align: center; padding: 40px 0; color: #6b7280; font-size: 0.9rem; }
+    .dk-loading { text-align: center; padding: 40px 0; color: #53565d; font-size: 0.9rem; }
     .dk-spinner {
       display: inline-block;
       width: 24px; height: 24px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #3178ff;
+      border: 3px solid #eceef1;
+      border-top-color: #fed220;
       border-radius: 50%;
       animation: dk-spin 0.7s linear infinite;
       margin-bottom: 10px;
     }
     @keyframes dk-spin { to { transform: rotate(360deg); } }
-    .dk-error { text-align: center; padding: 30px; color: #dc2626; font-size: 0.875rem; }
-    .dk-empty { text-align: center; padding: 30px; color: #6b7280; font-size: 0.875rem; }
+    .dk-error { text-align: center; padding: 30px; color: #232427; font-size: 0.875rem; }
+    .dk-empty { text-align: center; padding: 30px; color: #53565d; font-size: 0.875rem; }
 
     /* Responsive */
     @media (max-width: 600px) {
@@ -242,6 +307,10 @@
     return date.getFullYear() + '-' + (date.getMonth() < 9 ? '0' : '') + (date.getMonth() + 1);
   }
 
+  // Default pre-selections (user-changeable, unlike data-topic/data-sponsor which lock & hide)
+  var DEFAULT_TOPIC = 'KI';
+  var DEFAULT_SPONSOR = 'Stiftung Bürgermut';
+
   // === DigiKalEmbed Class ===
   function DigiKalEmbed(container) {
     this.container = container;
@@ -254,8 +323,8 @@
     this.filteredEvents = [];
     this.visibleCount = this.count;
     this.selectedMonth = '';
-    this.selectedTopic = this.preTopic;
-    this.selectedSponsor = this.preSponsor;
+    this.selectedTopic = this.preTopic || DEFAULT_TOPIC;
+    this.selectedSponsor = this.preSponsor || DEFAULT_SPONSOR;
 
     this.shadow = container.attachShadow({ mode: 'open' });
     var style = document.createElement('style');
@@ -278,22 +347,56 @@
       limit: '-1'
     });
 
-    fetch(API_URL + '?' + params.toString(), {
+    var eventsReq = fetch(API_URL + '?' + params.toString(), {
       headers: { Authorization: 'Bearer ' + API_TOKEN }
-    })
-    .then(function(res) {
+    }).then(function(res) {
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
-    })
-    .then(function(json) {
-      self.allEvents = json.data || [];
-      self.filterEvents();
-      self.render();
-    })
-    .catch(function(err) {
-      console.error('DigiKal embed error:', err);
-      self.root.innerHTML = '<div class="dk-error">Events konnten nicht geladen werden. Bitte sp\u00E4ter erneut versuchen.</div>';
     });
+
+    Promise.all([eventsReq, loadClusters()])
+      .then(function(results) {
+        self.allEvents = (results[0] && results[0].data) || [];
+        self.normalizePreselections();
+        self.filterEvents();
+        self.render();
+      })
+      .catch(function(err) {
+        console.error('DigiKal embed error:', err);
+        self.root.innerHTML = '<div class="dk-error">Events konnten nicht geladen werden. Bitte sp\u00E4ter erneut versuchen.</div>';
+      });
+  };
+
+  DigiKalEmbed.prototype.normalizePreselections = function() {
+    // Map default/preset topic onto a cluster key (or raw tag) that actually exists in the data.
+    if (this.selectedTopic) {
+      var selectedCluster = clusterTag(this.selectedTopic);
+      var found = false;
+      if (selectedCluster) {
+        for (var i = 0; i < this.allEvents.length; i++) {
+          if (getDisplayTopics(this.allEvents[i]).indexOf(selectedCluster) !== -1) {
+            found = true;
+            break;
+          }
+        }
+      }
+      if (found && selectedCluster) this.selectedTopic = selectedCluster;
+      else if (!this.preTopic) this.selectedTopic = '';
+    }
+
+    if (this.selectedSponsor) {
+      var needleS = this.selectedSponsor.toLowerCase();
+      var exactSponsor = null;
+      this.allEvents.some(function(ev) {
+        if (ev.organizer && ev.organizer.toLowerCase().indexOf(needleS) !== -1) {
+          exactSponsor = ev.organizer;
+          return true;
+        }
+        return false;
+      });
+      if (exactSponsor) this.selectedSponsor = exactSponsor;
+      else if (!this.preSponsor) this.selectedSponsor = '';
+    }
   };
 
   DigiKalEmbed.prototype.filterEvents = function() {
@@ -308,8 +411,7 @@
       if (start < now) return false;
       if (selMonth && getMonthKey(start) !== selMonth) return false;
       if (selTopic) {
-        var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
-        if (topics.indexOf(selTopic) === -1) return false;
+        if (getDisplayTopics(ev).indexOf(selTopic) === -1) return false;
       }
       if (selSponsor) {
         var org = (ev.organizer || '').toLowerCase();
@@ -330,8 +432,7 @@
       var start = new Date(ev.start_date);
       if (start < now) return;
       if (selTopic) {
-        var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
-        if (topics.indexOf(selTopic) === -1) return;
+        if (getDisplayTopics(ev).indexOf(selTopic) === -1) return;
       }
       if (selSponsor) {
         var org = (ev.organizer || '').toLowerCase();
@@ -363,15 +464,22 @@
         var org = (ev.organizer || '').toLowerCase();
         if (org.indexOf(selSponsor.toLowerCase()) === -1) return;
       }
-      var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
-      topics.forEach(function(t) {
+      getDisplayTopics(ev).forEach(function(t) {
         counts[t] = (counts[t] || 0) + 1;
       });
     });
 
-    return Object.keys(counts).sort(function(a, b) {
-      return a.localeCompare(b);
-    }).map(function(key) {
+    // Sort by count desc, then alphabetically. Clusters always shown; unmapped
+    // tags hidden below count=2 to keep the dropdown focused.
+    var keys = [];
+    for (var k in counts) {
+      var isCluster = !!CLUSTER_KEYS_SET[k];
+      if (isCluster || counts[k] >= 2) keys.push(k);
+    }
+    keys.sort(function(a, b) {
+      return (counts[b] - counts[a]) || a.localeCompare(b);
+    });
+    return keys.map(function(key) {
       return { key: key, label: key, count: counts[key] };
     });
   };
@@ -388,8 +496,7 @@
       if (start < now) return;
       if (selMonth && getMonthKey(start) !== selMonth) return;
       if (selTopic) {
-        var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
-        if (topics.indexOf(selTopic) === -1) return;
+        if (getDisplayTopics(ev).indexOf(selTopic) === -1) return;
       }
       if (ev.organizer) {
         counts[ev.organizer] = (counts[ev.organizer] || 0) + 1;
@@ -421,15 +528,7 @@
 
       html += '<div class="dk-filters">';
 
-      // Month dropdown
-      html += '<select class="dk-select" data-filter="month">';
-      html += '<option value="">Alle Monate</option>';
-      months.forEach(function(m) {
-        html += '<option value="' + m.key + '"' + (self.selectedMonth === m.key ? ' selected' : '') + '>' + escapeHtml(m.label) + ' (' + m.count + ')</option>';
-      });
-      html += '</select>';
-
-      // Topic dropdown (only if no pre-filter set)
+      // 1. Topic dropdown (only if no pre-filter lock)
       if (!this.preTopic) {
         html += '<select class="dk-select" data-filter="topic">';
         html += '<option value="">Alle Themen</option>';
@@ -439,7 +538,7 @@
         html += '</select>';
       }
 
-      // Sponsor/organizer dropdown (only if no pre-filter set)
+      // 2. Sponsor/organizer dropdown (only if no pre-filter lock)
       if (!this.preSponsor) {
         html += '<select class="dk-select" data-filter="sponsor">';
         html += '<option value="">Alle Veranstalter</option>';
@@ -448,6 +547,14 @@
         });
         html += '</select>';
       }
+
+      // 3. Month dropdown
+      html += '<select class="dk-select" data-filter="month">';
+      html += '<option value="">Alle Monate</option>';
+      months.forEach(function(m) {
+        html += '<option value="' + m.key + '"' + (self.selectedMonth === m.key ? ' selected' : '') + '>' + escapeHtml(m.label) + ' (' + m.count + ')</option>';
+      });
+      html += '</select>';
 
       html += '</div>';
     }
@@ -524,7 +631,7 @@
     var startTime = extractTime(ev.start_date);
     var endTime = extractTime(ev.end_date);
     var cost = formatCost(ev.cost);
-    var topics = (ev.tag_groups && ev.tag_groups.topic) || [];
+    var topics = getDisplayTopics(ev);
     var link = ev.website || ev.register_link || '';
     var isSponsor = !!getSponsorColor(ev.organizer);
     var cardClass = 'dk-card' + (isSponsor ? ' dk-card--sponsor' : '');

@@ -61,6 +61,80 @@
     <p><em>Note: Only the first <code>#digikal-events</code> element is initialized. Change the attributes on Test 1 to try different configs.</em></p>
   </div>
 
-  <script src="embed.js"></script>
+  <!-- Mock the Directus API so the test page shows hardcoded events without network access -->
+  <script>
+    (function() {
+      var MOCK_EVENTS = [
+        {
+          id: 'test-buergermut-1',
+          title: 'KI in der Zivilgesellschaft: Praxis-Workshop',
+          start_date: '2026-05-15T18:00:00',
+          end_date: '2026-05-15T20:00:00',
+          organizer: 'Stiftung Bürgermut',
+          location: null,
+          cost: 0,
+          description: 'Wie KI-Tools sinnvoll im gemeinnützigen Sektor eingesetzt werden können — mit konkreten Anwendungsbeispielen aus der Praxis.',
+          website: 'https://www.buergermut.de/',
+          review_status: 'approved',
+          tag_groups: { topic: ['KI'] }
+        },
+        {
+          id: 'test-other-1',
+          title: 'Datenschutz-Sprechstunde für NGOs',
+          start_date: '2026-05-22T14:00:00',
+          end_date: '2026-05-22T15:30:00',
+          organizer: 'Digitalcourage e.V.',
+          location: 'Berlin',
+          cost: 'kostenlos',
+          description: 'Offene Fragerunde zu DSGVO, Tracking und sicherer Kommunikation.',
+          website: 'https://example.org/datenschutz',
+          review_status: 'approved',
+          tag_groups: { topic: ['Datenschutz'] }
+        },
+        {
+          id: 'test-other-2',
+          title: 'Open-Source-Fundraising: Tools im Vergleich',
+          start_date: '2026-06-03T17:00:00',
+          end_date: null,
+          organizer: 'Wikimedia Deutschland',
+          location: null,
+          cost: 15,
+          description: 'Welche Open-Source-Lösungen eignen sich für Spendenverwaltung in kleinen Organisationen?',
+          website: 'https://example.org/fundraising',
+          review_status: 'approved',
+          tag_groups: { topic: ['Fundraising', 'KI'] }
+        }
+      ];
+
+      var MOCK_CLUSTERS = {
+        clusters: [
+          { key: 'KI', members: ['KI', 'Künstliche Intelligenz', 'AI', 'ChatGPT'] },
+          { key: 'Datenschutz & Recht', members: ['Datenschutz', 'DSGVO'] },
+          { key: 'Fundraising', members: ['Fundraising', 'Digitales Fundraising'] }
+        ],
+        drop: ['Digitalisierung', 'Digital']
+      };
+
+      var origFetch = window.fetch;
+      window.fetch = function(input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url) || '';
+        if (url.indexOf('calapi.buerofalk.de') !== -1) {
+          var body = JSON.stringify({ data: MOCK_EVENTS });
+          return Promise.resolve(new Response(body, {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          }));
+        }
+        if (url.indexOf('/tag-clusters.json') !== -1) {
+          return Promise.resolve(new Response(JSON.stringify(MOCK_CLUSTERS), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          }));
+        }
+        return origFetch.call(window, input, init);
+      };
+    })();
+  </script>
+  <script src="d3-embed.js"></script>
 </body>
 </html>
