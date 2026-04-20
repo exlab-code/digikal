@@ -2,39 +2,30 @@
  * Tag clustering helpers — single entry point used by both the SvelteKit site
  * and the D3 embed (via /tag-clusters.json endpoint). Edit tagClusters.json
  * to change grouping behavior; this module only derives lookups and provides
- * helper functions.
+ * helper functions. Supports multiple dimensions (currently topic + audience).
  */
 import data from './tagClusters.json';
 
 export const TAG_CLUSTERS_DATA = data;
-export const CLUSTERS = data.clusters;
-export const DROP_TAGS = data.drop;
 
-const LOWER_DROP = new Set(DROP_TAGS.map((t) => t.toLowerCase()));
-const MEMBER_TO_CLUSTER = new Map();
-for (const cluster of CLUSTERS) {
-	for (const member of cluster.members) {
-		MEMBER_TO_CLUSTER.set(member.toLowerCase(), cluster.key);
+function buildDimension(dim) {
+	const clusters = dim?.clusters || [];
+	const drop = dim?.drop || [];
+	const lowerDrop = new Set(drop.map((t) => t.toLowerCase()));
+	const memberToCluster = new Map();
+	for (const c of clusters) {
+		for (const m of c.members) {
+			memberToCluster.set(m.toLowerCase(), c.key);
+		}
 	}
+	const keys = clusters.map((c) => c.key);
+	const keySet = new Set(keys);
+	return { clusters, drop, lowerDrop, memberToCluster, keys, keySet };
 }
 
-export const CLUSTER_KEYS = CLUSTERS.map((c) => c.key);
+const TOPIC = buildDimension(data.topic);
+const AUDIENCE = buildDimension(data.audience);
 
-/**
- * Normalize a single raw tag to its cluster key.
- * Returns null if the tag is in the drop list (pure noise).
- * Returns the raw tag unchanged if no cluster matches (preserves long-tail).
- */
-export function clusterTag(raw) {
-	if (!raw) return null;
-	const key = String(raw).toLowerCase().trim();
-	if (LOWER_DROP.has(key)) return null;
-	return MEMBER_TO_CLUSTER.get(key) || raw;
-}
-
-/**
- * Parse tag_groups (object or JSON string), defaulting to {}.
- */
 function parseTagGroups(tagGroups) {
 	if (!tagGroups) return {};
 	if (typeof tagGroups === 'string') {
@@ -48,16 +39,23 @@ function parseTagGroups(tagGroups) {
 }
 
 /**
- * Return deduplicated display topics for an event: cluster keys for known
- * tags, raw strings for unmapped tags, with drop-list noise removed.
+ * Normalize a raw tag to its cluster key within the given dimension.
+ * Returns null for dropped (noise) tags, raw unchanged for unmapped.
  */
-export function getDisplayTopics(event) {
+function clusterValue(dim, raw) {
+	if (!raw) return null;
+	const key = String(raw).toLowerCase().trim();
+	if (dim.lowerDrop.has(key)) return null;
+	return dim.memberToCluster.get(key) || raw;
+}
+
+function getDisplayValues(event, dim, groupKey) {
 	const tg = parseTagGroups(event?.tag_groups);
-	const raw = Array.isArray(tg.topic) ? tg.topic : [];
+	const raw = Array.isArray(tg[groupKey]) ? tg[groupKey] : [];
 	const seen = new Set();
 	const out = [];
 	for (const t of raw) {
-		const c = clusterTag(t);
+		const c = clusterValue(dim, t);
 		if (!c || seen.has(c)) continue;
 		seen.add(c);
 		out.push(c);
@@ -65,29 +63,43 @@ export function getDisplayTopics(event) {
 	return out;
 }
 
-/**
- * Does this event match a selected topic key (cluster key or unmapped raw tag)?
- */
-export function eventMatchesTopic(event, selectedKey) {
-	if (!selectedKey) return true;
-	return getDisplayTopics(event).includes(selectedKey);
-}
-
-/**
- * Return [{ key, count, isCluster }] sorted by count desc, then key asc.
- * `minCountUnmapped` hides long-tail unmapped tags below this frequency
- * (clusters are always shown).
- */
-export function getTopicOptions(events, minCountUnmapped = 2) {
+function getOptions(events, dim, groupKey, minCountUnmapped) {
 	const counts = new Map();
 	for (const ev of events || []) {
-		for (const key of getDisplayTopics(ev)) {
+		for (const key of getDisplayValues(ev, dim, groupKey)) {
 			counts.set(key, (counts.get(key) || 0) + 1);
 		}
 	}
-	const clusterSet = new Set(CLUSTER_KEYS);
 	return [...counts.entries()]
-		.filter(([key, count]) => clusterSet.has(key) || count >= minCountUnmapped)
-		.map(([key, count]) => ({ key, count, isCluster: clusterSet.has(key) }))
+		.filter(([key, count]) => dim.keySet.has(key) || count >= minCountUnmapped)
+		.map(([key, count]) => ({ key, count, isCluster: dim.keySet.has(key) }))
 		.sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
 }
+
+// === Topic dimension ===
+export const TOPIC_CLUSTER_KEYS = TOPIC.keys;
+export const clusterTopic = (raw) => clusterValue(TOPIC, raw);
+export const getDisplayTopics = (event) => getDisplayValues(event, TOPIC, 'topic');
+export const getTopicOptions = (events, minCountUnmapped = 2) =>
+	getOptions(events, TOPIC, 'topic', minCountUnmapped);
+export const eventMatchesTopic = (event, selectedKey) => {
+	if (!selectedKey) return true;
+	return getDisplayTopics(event).includes(selectedKey);
+};
+
+// === Audience dimension ===
+export const AUDIENCE_CLUSTER_KEYS = AUDIENCE.keys;
+export const clusterAudience = (raw) => clusterValue(AUDIENCE, raw);
+export const getDisplayAudience = (event) => getDisplayValues(event, AUDIENCE, 'audience');
+export const getAudienceOptions = (events, minCountUnmapped = 2) =>
+	getOptions(events, AUDIENCE, 'audience', minCountUnmapped);
+export const eventMatchesAudience = (event, selectedKey) => {
+	if (!selectedKey) return true;
+	return getDisplayAudience(event).includes(selectedKey);
+};
+
+// === Back-compat aliases (topic was the only dimension before) ===
+export const CLUSTERS = TOPIC.clusters;
+export const DROP_TAGS = TOPIC.drop;
+export const CLUSTER_KEYS = TOPIC.keys;
+export const clusterTag = clusterTopic;

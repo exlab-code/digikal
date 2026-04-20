@@ -21,8 +21,11 @@
         return res.json();
       })
       .then(function(data) {
-        (data.drop || []).forEach(function(t) { LOWER_DROP[t.toLowerCase()] = true; });
-        (data.clusters || []).forEach(function(c) {
+        // Embed only consumes the topic dimension; audience lives on the main
+        // site's filter. Support both the old flat shape and the nested shape.
+        var topic = (data && data.topic) || data || {};
+        (topic.drop || []).forEach(function(t) { LOWER_DROP[t.toLowerCase()] = true; });
+        (topic.clusters || []).forEach(function(c) {
           CLUSTER_KEYS_SET[c.key] = true;
           (c.members || []).forEach(function(m) {
             MEMBER_TO_CLUSTER[m.toLowerCase()] = c.key;

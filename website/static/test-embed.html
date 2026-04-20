@@ -107,12 +107,21 @@
       ];
 
       var MOCK_CLUSTERS = {
-        clusters: [
-          { key: 'KI', members: ['KI', 'Künstliche Intelligenz', 'AI', 'ChatGPT'] },
-          { key: 'Datenschutz & Recht', members: ['Datenschutz', 'DSGVO'] },
-          { key: 'Fundraising', members: ['Fundraising', 'Digitales Fundraising'] }
-        ],
-        drop: ['Digitalisierung', 'Digital']
+        topic: {
+          clusters: [
+            { key: 'KI', members: ['KI', 'Künstliche Intelligenz', 'AI', 'ChatGPT'] },
+            { key: 'Datenschutz', members: ['Datenschutz', 'DSGVO'] },
+            { key: 'Fundraising', members: ['Fundraising', 'Digitales Fundraising'] }
+          ],
+          drop: ['Digitalisierung', 'Digital']
+        },
+        audience: {
+          clusters: [
+            { key: 'NPOs & Vereine', members: ['NGO', 'NPO', 'Vereine'] },
+            { key: 'Stiftungen', members: ['Stiftungen'] }
+          ],
+          drop: []
+        }
       };
 
       var origFetch = window.fetch;

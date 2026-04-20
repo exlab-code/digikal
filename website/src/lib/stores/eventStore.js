@@ -1,7 +1,13 @@
 import { writable, derived } from 'svelte/store';
-import { getDisplayTopics, CLUSTER_KEYS } from '$lib/tagClusters.js';
+import {
+	getDisplayTopics,
+	getDisplayAudience,
+	TOPIC_CLUSTER_KEYS,
+	AUDIENCE_CLUSTER_KEYS
+} from '$lib/tagClusters.js';
 
-const CLUSTER_KEY_SET = new Set(CLUSTER_KEYS);
+const TOPIC_KEY_SET = new Set(TOPIC_CLUSTER_KEYS);
+const AUDIENCE_KEY_SET = new Set(AUDIENCE_CLUSTER_KEYS);
 
 // Writable stores — populated from +page.server.js data
 export const events = writable([]);
@@ -27,20 +33,25 @@ export const filteredEvents = derived([events, filters], ([$events, $filters]) =
 
 		if (eventDay < today) return false;
 
-		// Filter by tags (AND logic). Cluster keys / unmapped topic tags match via
-		// the central cluster map against tag_groups.topic; other tags still match
-		// the flat event.tags array.
+		// Filter by tags (AND logic). Cluster keys / unmapped tags for the topic
+		// and audience dimensions are matched via the central cluster map; other
+		// filter tags (format, cost, raw carry-overs) still match the flat
+		// event.tags array.
 		if ($filters.tags && $filters.tags.length > 0) {
 			const eventTagsLower = Array.isArray(event.tags)
 				? event.tags.map((t) => t.toLowerCase())
 				: [];
 			const displayTopics = getDisplayTopics(event);
+			const displayAudience = getDisplayAudience(event);
 			for (const filterTag of $filters.tags) {
-				const isTopicFilter =
-					CLUSTER_KEY_SET.has(filterTag) || displayTopics.includes(filterTag);
-				const topicMatch = isTopicFilter && displayTopics.includes(filterTag);
+				const topicMatch =
+					(TOPIC_KEY_SET.has(filterTag) || displayTopics.includes(filterTag)) &&
+					displayTopics.includes(filterTag);
+				const audienceMatch =
+					(AUDIENCE_KEY_SET.has(filterTag) || displayAudience.includes(filterTag)) &&
+					displayAudience.includes(filterTag);
 				const flatMatch = eventTagsLower.includes(filterTag.toLowerCase());
-				if (!topicMatch && !flatMatch) return false;
+				if (!topicMatch && !audienceMatch && !flatMatch) return false;
 			}
 		}
 
