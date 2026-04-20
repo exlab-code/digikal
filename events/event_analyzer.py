@@ -429,7 +429,13 @@ ORGANIZER vs. SPEAKER:
 
 TAG_GROUPS (max 5 Tags gesamt, aufgeteilt in die Kategorien):
 
-topic — Themen-Tags frei vergeben (z.B. KI, Datenschutz, Fundraising, Nachhaltigkeit)
+topic — Themen-Tags frei vergeben, ABER:
+  - Kurz und prägnant (1-3 Wörter), bevorzuge etablierte deutsche Begriffe
+  - "Digitalisierung" NICHT als Tag nutzen (ist für alle Events implizit)
+  - Zu vage Tags vermeiden: "Digital", "Technologie", "Zukunft", "Innovation" alleine
+  - Zielgruppen gehören in `audience`, NICHT in `topic` (also kein "NPO"/"NGO"/"Vereine" als Topic)
+  - Bei KI-Themen: "KI" bevorzugen (nicht "AI" oder "Künstliche Intelligenz" als Variante)
+  - Beispiele: KI, Datenschutz, Fundraising, Nachhaltigkeit, Social Media, IT-Sicherheit
 format — Veranstaltungsformat (z.B. Workshop, Webinar, Konferenz). "Online" ZUSAETZLICH wenn virtuell
 audience — Zielgruppe (z.B. NGO, Vereine, Ehrenamtliche)
 cost — "Kostenlos" wenn kostenlos, sonst den Preis

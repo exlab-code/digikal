@@ -1,6 +1,9 @@
 /**
- * Topic definitions for SEO landing pages at /themen/[topic]
- * Each topic maps to relevant event and Förderprogramm tags.
+ * Topic definitions for SEO landing pages at /themen/[topic].
+ * `eventTags` are now cluster keys from $lib/tagClusters.js so the pages
+ * surface every event whose raw topic tag maps into the cluster.
+ * `foerdermittelTags` keep their free-text semantics (Förderprogramme tags
+ * are not yet clustered).
  */
 export const TOPICS = {
 	ki: {
@@ -8,7 +11,7 @@ export const TOPICS = {
 		metaTitle: 'KI & Künstliche Intelligenz für gemeinnützige Organisationen – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zu Künstlicher Intelligenz für gemeinnützige Organisationen in Deutschland.',
-		eventTags: ['KI', 'Künstliche Intelligenz', 'KI für Non-Profits'],
+		eventTags: ['KI'],
 		foerdermittelTags: ['Künstliche Intelligenz', 'KI', 'Digitalisierung']
 	},
 	datenschutz: {
@@ -16,7 +19,7 @@ export const TOPICS = {
 		metaTitle: 'Datenschutz & IT-Sicherheit für Nonprofits – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zu Datenschutz und IT-Sicherheit für gemeinnützige Organisationen.',
-		eventTags: ['Datenschutz', 'DSGVO', 'IT-Sicherheit', 'Datenschutz & Sicherheit'],
+		eventTags: ['Datenschutz & Recht', 'IT-Sicherheit'],
 		foerdermittelTags: ['Datenschutz', 'IT-Sicherheit', 'Cybersicherheit']
 	},
 	'digitale-transformation': {
@@ -24,11 +27,7 @@ export const TOPICS = {
 		metaTitle: 'Digitale Transformation für gemeinnützige Organisationen – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zur digitalen Transformation für gemeinnützige Organisationen.',
-		eventTags: [
-			'Digitale Transformation',
-			'Digitalisierung',
-			'Digitale Transformation & Strategie'
-		],
+		eventTags: ['Strategie & Führung', 'Prozesse & Automatisierung'],
 		foerdermittelTags: ['Digitale Transformation', 'Digitalisierung']
 	},
 	'it-sicherheit': {
@@ -36,7 +35,7 @@ export const TOPICS = {
 		metaTitle: 'IT-Sicherheit & Cybersicherheit für gemeinnützige Organisationen – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zu IT-Sicherheit und Cybersicherheit für gemeinnützige Organisationen in Deutschland.',
-		eventTags: ['IT-Sicherheit', 'Cybersicherheit', 'Datenschutz & Sicherheit'],
+		eventTags: ['IT-Sicherheit'],
 		foerdermittelTags: ['IT-Sicherheit', 'Cybersicherheit', 'Informationssicherheit']
 	},
 	'social-media': {
@@ -44,7 +43,7 @@ export const TOPICS = {
 		metaTitle: 'Social Media & Digitale Kommunikation für Nonprofits – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zu Social Media und digitaler Kommunikation für gemeinnützige Organisationen.',
-		eventTags: ['Social Media', 'Digitale Kommunikation', 'Digitale Kommunikation & Social Media', 'Öffentlichkeitsarbeit'],
+		eventTags: ['Social Media & Kommunikation'],
 		foerdermittelTags: ['Social Media', 'Digitale Kommunikation', 'Öffentlichkeitsarbeit']
 	}
 };

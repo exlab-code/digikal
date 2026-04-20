@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { TOPICS } from '$lib/topics.js';
+import { getDisplayTopics } from '$lib/tagClusters.js';
 import { getEvents } from '$lib/services/api.server.js';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -34,24 +35,10 @@ export async function load({ params }) {
 			const eventDate = new Date(event.start_date);
 			if (new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate()) < today)
 				return false;
-			if (!event.tags && !event.tag_groups) return false;
 
-			// Check flat tags
-			const eventTags = (event.tags || []).map((t) => t.toLowerCase());
-			const flatMatch = topicConfig.eventTags.some((tag) =>
-				eventTags.some((et) => et.includes(tag.toLowerCase()))
-			);
-			if (flatMatch) return true;
-
-			// Check tag_groups (e.g. tag_groups.topic)
-			if (event.tag_groups) {
-				const tg = typeof event.tag_groups === 'string' ? JSON.parse(event.tag_groups) : event.tag_groups;
-				const allGroupTags = Object.values(tg).flat().map((t) => t.toLowerCase());
-				return topicConfig.eventTags.some((tag) =>
-					allGroupTags.some((gt) => gt.includes(tag.toLowerCase()))
-				);
-			}
-			return false;
+			// Topic match via the central cluster map.
+			const displayTopics = getDisplayTopics(event);
+			return topicConfig.eventTags.some((tag) => displayTopics.includes(tag));
 		})
 		.slice(0, 20);
 

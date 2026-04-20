@@ -1,0 +1,241 @@
+{
+  "_comment": "Single source of truth for topic-tag clustering. Consumed by the SvelteKit site (src/lib/tagClusters.js) and by the D3 embed (fetched via /tag-clusters.json endpoint). Edit this file to change grouping behavior in both frontends at once.",
+  "clusters": [
+    {
+      "key": "KI",
+      "members": [
+        "KI",
+        "Künstliche Intelligenz",
+        "AI",
+        "Generative KI",
+        "Generative Sprachmodelle",
+        "ChatGPT",
+        "KI-Tools",
+        "KI-Agenten",
+        "KI-Analytik",
+        "KI-Beauftragte",
+        "Agenten"
+      ]
+    },
+    {
+      "key": "Daten & Analytics",
+      "members": [
+        "Daten",
+        "Data Science",
+        "Big Data",
+        "Data Spaces",
+        "Datenökosysteme",
+        "Tracking",
+        "Evaluation"
+      ]
+    },
+    {
+      "key": "Datenschutz & Recht",
+      "members": [
+        "Datenschutz",
+        "DSGVO",
+        "Datenrecht",
+        "DSFA",
+        "Datensicherheit",
+        "IT-Recht",
+        "Bildrechte",
+        "IP-Recht",
+        "Compliance",
+        "Arbeitsrecht",
+        "Haftungsrisiken",
+        "Vertragsgestaltung",
+        "Elektronische Signaturen",
+        "Versicherung"
+      ]
+    },
+    {
+      "key": "IT-Sicherheit",
+      "members": [
+        "IT-Sicherheit",
+        "Cybersecurity",
+        "Cyber Security",
+        "Digitale Wachsamkeit",
+        "Phishing",
+        "Multifaktorauthentifizierung",
+        "Backup-Lösungen",
+        "Notfallmanagement",
+        "Risikomanagement"
+      ]
+    },
+    {
+      "key": "Social Media & Kommunikation",
+      "members": [
+        "Social Media",
+        "Instagram",
+        "Facebook",
+        "Öffentlichkeitsarbeit",
+        "Kommunikation",
+        "Interne Kommunikation",
+        "Newsletter",
+        "E-Mail-Marketing",
+        "Storytelling",
+        "PR",
+        "Corporate Identity",
+        "Marketing",
+        "B2B-Marketing",
+        "SEO",
+        "GEO",
+        "Google Ads",
+        "Videoproduktion",
+        "Videos",
+        "Fotografie",
+        "Grafikdesign",
+        "Design",
+        "Produktdesign"
+      ]
+    },
+    {
+      "key": "Fundraising",
+      "members": [
+        "Fundraising",
+        "Digitales Fundraising",
+        "Crowdfunding",
+        "Google Ad Grants",
+        "Antragsmanagement",
+        "Finanzierung"
+      ]
+    },
+    {
+      "key": "Strategie & Führung",
+      "members": [
+        "Strategie",
+        "Digitale Transformation",
+        "Digital Transformation",
+        "Digitale Führung",
+        "Führung",
+        "Leadership",
+        "Management",
+        "Changemanagement",
+        "Veränderungsprozesse",
+        "Widerstand",
+        "OKR",
+        "Innovation",
+        "Skalierung",
+        "Wettbewerbsfähigkeit",
+        "Effizienzsteigerung",
+        "Effizienz",
+        "Kundenzentrierung",
+        "Soziale Innovation",
+        "Soziale Innovationen",
+        "Resilienz"
+      ]
+    },
+    {
+      "key": "Prozesse & Automatisierung",
+      "members": [
+        "Prozessmanagement",
+        "Prozessoptimierung",
+        "Prozessautomatisierung",
+        "Automatisierung",
+        "Projektmanagement",
+        "Multiprojektmanagement",
+        "IT-Projektmanagement",
+        "Wissensmanagement",
+        "Arbeitsprozesse digitalisieren",
+        "Produktivität",
+        "Standardisierung",
+        "Ideation",
+        "Software-Qualität"
+      ]
+    },
+    {
+      "key": "Engagement & Ehrenamt",
+      "members": [
+        "Engagement",
+        "Ehrenamt",
+        "Hauptamt",
+        "Mitgliedergewinnung",
+        "Bürgerbeteiligung",
+        "Partizipation",
+        "Selbsthilfe",
+        "Zusammenarbeit"
+      ]
+    },
+    {
+      "key": "Digitale Kompetenzen & Bildung",
+      "members": [
+        "Digitale Kompetenzen",
+        "Bildung",
+        "Digitale Bildung",
+        "Coaching",
+        "Mentoring",
+        "mentoring",
+        "Zertifikatslehrgang",
+        "Zertifizierung"
+      ]
+    },
+    {
+      "key": "Barrierefreiheit & Teilhabe",
+      "members": [
+        "Barrierefreiheit",
+        "Digitale Barrierefreiheit",
+        "Digitale Teilhabe",
+        "Inklusion",
+        "Migration",
+        "Ältere Menschen",
+        "Alterung",
+        "Frauen",
+        "Digitale Ethik"
+      ]
+    },
+    {
+      "key": "Nachhaltigkeit & Gemeinwohl",
+      "members": [
+        "Nachhaltigkeit",
+        "Soziale Nachhaltigkeit",
+        "Energieeffizienz",
+        "Energiewirtschaft",
+        "Gemeinwohl",
+        "Demokratie",
+        "Europa"
+      ]
+    },
+    {
+      "key": "Gesundheit & Soziales",
+      "members": [
+        "Psychische Gesundheit",
+        "Mediensucht",
+        "Prävention",
+        "Pflege",
+        "Soziale Arbeit",
+        "Sozialwirtschaft",
+        "Wohnraumschaffung"
+      ]
+    },
+    {
+      "key": "Tech & Infrastruktur",
+      "members": [
+        "Open Source",
+        "Cloud Computing",
+        "IT",
+        "ITK-Beschaffung",
+        "Digitale Souveränität",
+        "Digitale Dienstleistungen",
+        "Digitale Zwillinge",
+        "Digitaler Produktpass",
+        "XR",
+        "Quantum Computing"
+      ]
+    }
+  ],
+  "drop": [
+    "Digitalisierung",
+    "Digital",
+    "Technologie",
+    "Zukunft",
+    "Zukunft der Arbeit",
+    "NPO",
+    "NPOs",
+    "NGO",
+    "NGOs",
+    "Non-Profit",
+    "Non-Profits",
+    "Non-Profit-Organisationen",
+    "Vereine"
+  ]
+}

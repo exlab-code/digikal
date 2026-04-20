@@ -1,4 +1,7 @@
 import { writable, derived } from 'svelte/store';
+import { getDisplayTopics, CLUSTER_KEYS } from '$lib/tagClusters.js';
+
+const CLUSTER_KEY_SET = new Set(CLUSTER_KEYS);
 
 // Writable stores — populated from +page.server.js data
 export const events = writable([]);
@@ -24,12 +27,20 @@ export const filteredEvents = derived([events, filters], ([$events, $filters]) =
 
 		if (eventDay < today) return false;
 
-		// Filter by tags (AND logic)
+		// Filter by tags (AND logic). Cluster keys / unmapped topic tags match via
+		// the central cluster map against tag_groups.topic; other tags still match
+		// the flat event.tags array.
 		if ($filters.tags && $filters.tags.length > 0) {
-			if (!event.tags || !Array.isArray(event.tags)) return false;
-			const eventTagsLower = event.tags.map((tag) => tag.toLowerCase());
+			const eventTagsLower = Array.isArray(event.tags)
+				? event.tags.map((t) => t.toLowerCase())
+				: [];
+			const displayTopics = getDisplayTopics(event);
 			for (const filterTag of $filters.tags) {
-				if (!eventTagsLower.includes(filterTag.toLowerCase())) return false;
+				const isTopicFilter =
+					CLUSTER_KEY_SET.has(filterTag) || displayTopics.includes(filterTag);
+				const topicMatch = isTopicFilter && displayTopics.includes(filterTag);
+				const flatMatch = eventTagsLower.includes(filterTag.toLowerCase());
+				if (!topicMatch && !flatMatch) return false;
 			}
 		}
 

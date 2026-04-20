@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { events, filters, updateFilters, availableMonths } from '$lib/stores/eventStore';
+  import { getTopicOptions } from '$lib/tagClusters.js';
   import Tag from './Tag.svelte';
   import Accordion from './Accordion.svelte';
   import { trackEvent } from '$lib/services/analytics';
@@ -69,34 +70,37 @@
   }
   
   function getGroupedTags(events) {
+    // Topic group uses the central cluster map (cluster keys + long-tail ≥2).
+    const topicOptions = getTopicOptions(events, minTagFrequency);
+    const topicTags = topicOptions.map((o) => o.key);
+    // Overlay cluster counts onto tagFrequency so the Tag badge reflects cluster totals.
+    topicOptions.forEach((o) => { tagFrequency[o.key] = o.count; });
+
     const groups = {
-      "topic": new Set(),
+      "topic": topicTags,
       "format": new Set(),
       "audience": new Set(),
       "cost": new Set()
     };
-    
-    // Collect tags from events
+
+    // format / audience / cost still come from raw tag_groups
     events.forEach(event => {
       if (event.tag_groups) {
-        Object.entries(event.tag_groups).forEach(([groupId, tags]) => {
-          if (groups[groupId]) {
-            tags.forEach(tag => {
-              // Only add tags that meet the frequency threshold
-              if (tagFrequency[tag] >= minTagFrequency) {
-                groups[groupId].add(tag);
-              }
-            });
-          }
+        ['format', 'audience', 'cost'].forEach((groupId) => {
+          const tags = event.tag_groups[groupId] || [];
+          tags.forEach(tag => {
+            if (tagFrequency[tag] >= minTagFrequency) {
+              groups[groupId].add(tag);
+            }
+          });
         });
       }
     });
-    
-    // Convert Sets to sorted Arrays
-    Object.keys(groups).forEach(groupId => {
+
+    ['format', 'audience', 'cost'].forEach((groupId) => {
       groups[groupId] = Array.from(groups[groupId]).sort();
     });
-    
+
     return groups;
   }
 
