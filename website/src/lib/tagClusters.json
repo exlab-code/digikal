@@ -18,7 +18,7 @@
       ]
     },
     {
-      "key": "Daten & Analytics",
+      "key": "Daten",
       "members": [
         "Daten",
         "Data Science",
@@ -30,7 +30,7 @@
       ]
     },
     {
-      "key": "Datenschutz & Recht",
+      "key": "Datenschutz",
       "members": [
         "Datenschutz",
         "DSGVO",
@@ -63,7 +63,7 @@
       ]
     },
     {
-      "key": "Social Media & Kommunikation",
+      "key": "Kommunikation",
       "members": [
         "Social Media",
         "Instagram",
@@ -101,7 +101,7 @@
       ]
     },
     {
-      "key": "Strategie & Führung",
+      "key": "Strategie",
       "members": [
         "Strategie",
         "Digitale Transformation",
@@ -126,7 +126,7 @@
       ]
     },
     {
-      "key": "Prozesse & Automatisierung",
+      "key": "Prozesse",
       "members": [
         "Prozessmanagement",
         "Prozessoptimierung",
@@ -144,7 +144,7 @@
       ]
     },
     {
-      "key": "Engagement & Ehrenamt",
+      "key": "Engagement",
       "members": [
         "Engagement",
         "Ehrenamt",
@@ -157,7 +157,7 @@
       ]
     },
     {
-      "key": "Digitale Kompetenzen & Bildung",
+      "key": "Bildung",
       "members": [
         "Digitale Kompetenzen",
         "Bildung",
@@ -170,7 +170,7 @@
       ]
     },
     {
-      "key": "Barrierefreiheit & Teilhabe",
+      "key": "Teilhabe",
       "members": [
         "Barrierefreiheit",
         "Digitale Barrierefreiheit",
@@ -184,7 +184,7 @@
       ]
     },
     {
-      "key": "Nachhaltigkeit & Gemeinwohl",
+      "key": "Nachhaltigkeit",
       "members": [
         "Nachhaltigkeit",
         "Soziale Nachhaltigkeit",
@@ -196,7 +196,7 @@
       ]
     },
     {
-      "key": "Gesundheit & Soziales",
+      "key": "Soziales",
       "members": [
         "Psychische Gesundheit",
         "Mediensucht",
@@ -208,7 +208,7 @@
       ]
     },
     {
-      "key": "Tech & Infrastruktur",
+      "key": "Tech",
       "members": [
         "Open Source",
         "Cloud Computing",

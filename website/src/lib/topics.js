@@ -19,7 +19,7 @@ export const TOPICS = {
 		metaTitle: 'Datenschutz & IT-Sicherheit für Nonprofits – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zu Datenschutz und IT-Sicherheit für gemeinnützige Organisationen.',
-		eventTags: ['Datenschutz & Recht', 'IT-Sicherheit'],
+		eventTags: ['Datenschutz', 'IT-Sicherheit'],
 		foerdermittelTags: ['Datenschutz', 'IT-Sicherheit', 'Cybersicherheit']
 	},
 	'digitale-transformation': {
@@ -27,7 +27,7 @@ export const TOPICS = {
 		metaTitle: 'Digitale Transformation für gemeinnützige Organisationen – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zur digitalen Transformation für gemeinnützige Organisationen.',
-		eventTags: ['Strategie & Führung', 'Prozesse & Automatisierung'],
+		eventTags: ['Strategie', 'Prozesse'],
 		foerdermittelTags: ['Digitale Transformation', 'Digitalisierung']
 	},
 	'it-sicherheit': {
@@ -43,7 +43,7 @@ export const TOPICS = {
 		metaTitle: 'Social Media & Digitale Kommunikation für Nonprofits – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zu Social Media und digitaler Kommunikation für gemeinnützige Organisationen.',
-		eventTags: ['Social Media & Kommunikation'],
+		eventTags: ['Kommunikation'],
 		foerdermittelTags: ['Social Media', 'Digitale Kommunikation', 'Öffentlichkeitsarbeit']
 	}
 };
