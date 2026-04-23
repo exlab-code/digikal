@@ -100,6 +100,33 @@ def get_email_body(msg):
     return body
 
 
+FORWARD_BODY_MARKERS = re.compile(
+    r'^[\s>]*(?:'
+    r'-{3,}\s*Forwarded message\s*-{3,}|'
+    r'-{3,}\s*Weitergeleitete Nachricht\s*-{3,}|'
+    r'Begin forwarded message:'
+    r')',
+    re.IGNORECASE | re.MULTILINE
+)
+
+FORWARD_SUBJECT_PREFIX = re.compile(r'^\s*(?:Fwd?|WG)\s*:', re.IGNORECASE)
+
+
+def detect_forwarded(subject, body):
+    """Detect if an email is a forward.
+
+    Returns (is_forwarded, inner_body). If a body marker is present, inner_body
+    is the content after the marker so the forwarder's own sign-off doesn't
+    truncate URL extraction downstream.
+    """
+    match = FORWARD_BODY_MARKERS.search(body)
+    if match:
+        return True, body[match.end():]
+    if FORWARD_SUBJECT_PREFIX.match(subject or ''):
+        return True, body
+    return False, body
+
+
 SIGNATURE_MARKERS = re.compile(
     r'^[\s]*(?:'
     r'-[\s-]*-|'
@@ -304,11 +331,26 @@ def process_inbox(dry_run=False):
         trusted = is_trusted_sender(sender)
         organizer_override = trusted_organizer(sender)
         body = get_email_body(msg)
-        urls = extract_urls(body)
+        is_forwarded, inner_body = detect_forwarded(subject, body)
+        urls = extract_urls(inner_body)
 
-        trust_tag = ''
-        if trusted:
-            trust_tag = f' [TRUSTED → {organizer_override}]' if organizer_override else ' [TRUSTED]'
+        # Forwarded trusted submissions keep auto-approval, but drop the
+        # organizer override — the trusted sender is the courier, not the
+        # actual organizer. Let the downstream LLM infer the organizer from
+        # the scraped page.
+        if is_forwarded:
+            organizer_override = None
+
+        if trusted and is_forwarded:
+            trust_tag = ' [TRUSTED, FORWARDED]'
+        elif trusted and organizer_override:
+            trust_tag = f' [TRUSTED → {organizer_override}]'
+        elif trusted:
+            trust_tag = ' [TRUSTED]'
+        elif is_forwarded:
+            trust_tag = ' [FORWARDED]'
+        else:
+            trust_tag = ''
         logger.info(f'Email from {source_name}: "{subject}" — {len(urls)} URL(s) found{trust_tag}')
 
         for url in urls:

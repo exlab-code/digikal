@@ -4,6 +4,15 @@ on:
   schedule:
     - cron: '0 3 * * *'  # Daily at 3 AM UTC (4 AM CET)
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Pipeline mode'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - email_only
 
 jobs:
   update-events:
@@ -24,6 +33,7 @@ jobs:
           pip install instructor openai pydantic python-dateutil
 
       - name: Run scraper
+        if: ${{ github.event.inputs.mode != 'email_only' }}
         env:
           DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
           DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
@@ -31,6 +41,7 @@ jobs:
         run: python events/event_scraper.py
 
       - name: Run individual scrapers
+        if: ${{ github.event.inputs.mode != 'email_only' }}
         env:
           DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
           DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
@@ -43,6 +54,7 @@ jobs:
           python events/scrapers/scrape_hiig.py
 
       - name: Run ICS import
+        if: ${{ github.event.inputs.mode != 'email_only' }}
         env:
           DIRECTUS_API_URL: ${{ secrets.DIRECTUS_API_URL }}
           DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
