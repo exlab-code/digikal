@@ -30,6 +30,9 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import requests
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from shared.page_scraper import scrape_url
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -52,10 +55,6 @@ IGNORE_DOMAINS = {
     'mailto:', 'unsubscribe', 'list-manage.com', 'mailchimp.com',
     'google.com/maps', 'fonts.googleapis.com', 'schema.org',
     'w3.org', 'facebook.com/tr', 'doubleclick.net',
-}
-
-REQUEST_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (compatible; DigiKal/1.0; +https://www.digikal.org)'
 }
 
 # Trusted sender domains → hardcoded organizer name.
@@ -207,38 +206,6 @@ def trusted_organizer(from_header):
         if domain == trusted_domain or domain.endswith('.' + trusted_domain):
             return organizer
     return None
-
-
-def scrape_url(url):
-    """Fetch a URL and extract text content."""
-    try:
-        response = requests.get(url, headers=REQUEST_HEADERS, timeout=15)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Remove script/style elements
-        for tag in soup(['script', 'style', 'nav', 'footer', 'header']):
-            tag.decompose()
-
-        # Try common content selectors first
-        content = None
-        for selector in ['main', 'article', '[role="main"]', '.content', '.entry-content']:
-            el = soup.select_one(selector)
-            if el:
-                content = el.get_text(separator='\n', strip=True)
-                break
-
-        if not content:
-            content = soup.get_text(separator='\n', strip=True)
-
-        # Truncate very long content
-        if len(content) > 10000:
-            content = content[:10000] + '...'
-
-        return content
-    except Exception as e:
-        logger.error(f'Failed to scrape {url}: {e}')
-        return None
 
 
 def create_scraped_entry(url, raw_content, source_name, trusted=False, organizer_override=None):

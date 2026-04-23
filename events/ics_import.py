@@ -7,6 +7,8 @@ This script imports events from ICS calendar files defined in config/ics_sources
 and adds them to the Directus database as unprocessed events.
 """
 import os
+import sys
+import re
 import json
 import requests
 import hashlib
@@ -14,6 +16,11 @@ import argparse
 from datetime import date, datetime
 from icalendar import Calendar
 from dotenv import load_dotenv
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from shared.page_scraper import scrape_url
+
+URL_IN_TEXT = re.compile(r'https?://[^\s<>"\')\]]+')
 
 # Load environment variables
 load_dotenv()
@@ -58,7 +65,29 @@ def download_ics(url):
     }
     response = requests.get(url, headers=headers)
     response.raise_for_status()
-    return response.text
+    # RFC 5545 mandates UTF-8 for iCal content. Some servers (e.g. pretix)
+    # send Content-Type: text/calendar without a charset, causing requests
+    # to fall back to ISO-8859-1 and mangle umlauts. Decode explicitly.
+    return response.content.decode('utf-8', errors='replace')
+
+def enrich_with_page_content(events):
+    """Fetch each event's URL and append page content to its detail_text.
+
+    Used for iCal feeds (like pretix) whose DESCRIPTION carries only the
+    bare booking link. scrape_url already strips pretix's "switch to
+    another date" widget, so the appended content is instance-specific.
+    """
+    for event in events:
+        url = event.get('url')
+        if not url:
+            continue
+        print(f"  Fetching detail page: {url}")
+        content = scrape_url(url)
+        if not content:
+            continue
+        existing = event.get('detail_text', '')
+        event['detail_text'] = (existing + '\n\n' + content).strip() if existing else content
+
 
 def parse_ics_file(ics_data, source_name, source_url, future_only=True):
     """Parse ICS file and extract events"""
@@ -101,6 +130,13 @@ def parse_ics_file(ics_data, source_name, source_url, future_only=True):
             description = str(component.get('description', ''))
             location = str(component.get('location', ''))
             url = str(component.get('url') or '')
+            # Pretix (and some other feeds) don't set a URL property — the
+            # event link is only in DESCRIPTION. Fall back to the first
+            # https:// in the description so dedup and linking still work.
+            if not url and description:
+                m = URL_IN_TEXT.search(description)
+                if m:
+                    url = m.group(0).rstrip('.,;:!?)>]')
 
             # Extract start date/time for filtering
             start_date = component.get('dtstart')
@@ -365,10 +401,14 @@ def main():
             events, skipped_past = parse_ics_file(ics_data, name, url, args.future_only)
             print(f"Found {len(events)} events in ICS file for {name}")
             total_skipped_past += skipped_past
-            
+
             if not events:
                 print(f"No events found in the ICS file for {name}")
                 continue
+
+            # Opt-in: enrich detail_text by scraping each event's page.
+            if source.get("fetch_details"):
+                enrich_with_page_content(events)
             
             # Save events to Directus (unless dry run)
             if args.dry_run:

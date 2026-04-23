@@ -222,12 +222,17 @@ class DirectusClient:
     
     def save_event(self, event_data):
         """Save processed event to events collection"""
-        # Check if event already exists
+        # Check if event already exists. Website is included so that
+        # recurring event series (or any pages the LLM might collapse into
+        # the same title+date) stay as distinct records when the source URL
+        # differs — pretix.eu's "switch to another date" pages are the
+        # original motivator.
         filter_params = {
             "filter": {
                 "_and": [
                     {"title": {"_eq": event_data.get("title", "")}},
-                    {"start_date": {"_eq": event_data.get("start_date", "")}}
+                    {"start_date": {"_eq": event_data.get("start_date", "")}},
+                    {"website": {"_eq": event_data.get("website", "")}}
                 ]
             }
         }
