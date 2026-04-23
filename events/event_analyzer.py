@@ -144,6 +144,7 @@ class EventData(BaseModel):
 # ============================================================================
 
 # Set up logging - only log to file, not console
+os.makedirs("events/logs", exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
