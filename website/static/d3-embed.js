@@ -312,7 +312,7 @@
 
   // Default pre-selections (user-changeable, unlike data-topic/data-sponsor which lock & hide)
   var DEFAULT_TOPIC = 'KI';
-  var DEFAULT_SPONSOR = 'Stiftung Bürgermut';
+  var DEFAULT_SPONSOR = 'D3 - so geht digital';
 
   // === DigiKalEmbed Class ===
   function DigiKalEmbed(container) {
