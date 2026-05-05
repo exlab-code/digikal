@@ -49,7 +49,7 @@ def fetch_page(page: int = 1) -> str:
     Returns:
         HTML content as string
     """
-    params = {"delta": ITEMS_PER_PAGE, "start": page}
+    params = {"delta": ITEMS_PER_PAGE, "start": (page - 1) * ITEMS_PER_PAGE}
     headers = {
         "User-Agent": "Mozilla/5.0 (compatible; digikal-scraper/1.0)",
         "Accept-Language": "de-DE,de;q=0.9",
@@ -173,12 +173,17 @@ def scrape_all(max_pages: int = 5) -> list[dict]:
             logger.info(f"No events on page {page}, stopping")
             break
 
+        new = 0
         for event in events:
             if event["url"] not in seen_urls:
                 seen_urls.add(event["url"])
                 all_events.append(event)
+                new += 1
 
-        logger.info(f"Page {page}: {len(events)} events (total: {len(all_events)})")
+        logger.info(f"Page {page}: {new} new / {len(events)} parsed (total: {len(all_events)})")
+        if new == 0:
+            logger.info("No new events, stopping")
+            break
 
     logger.info(f"Total events scraped: {len(all_events)}")
     return all_events
