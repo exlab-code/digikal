@@ -48,7 +48,7 @@ jobs:
         run: |
           python events/scrapers/scrape_sigu.py
           # scrape_socialnet.py paused — see events/scrapers/README.md
-          python events/scrapers/scrape_kgst.py
+          # scrape_kgst.py runs on Coolify server (kgst.de blocks GitHub Actions IPs)
           python events/scrapers/scrape_negz.py
           python events/scrapers/scrape_paritaetische.py
           python events/scrapers/scrape_hiig.py
