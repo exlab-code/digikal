@@ -1,3 +1,34 @@
+<script>
+	/** @type {import('./$types').PageData} */
+	export let data;
+
+	function daysAgo(iso) {
+		if (!iso) return null;
+		const diff = Date.now() - new Date(iso).getTime();
+		return Math.floor(diff / 86400000);
+	}
+
+	function statusPill(source) {
+		if (source.paused) return { label: 'Pausiert', cls: 'bg-amber-100 text-amber-700' };
+		const days = daysAgo(source.lastAdded);
+		if (days === null || source.count === null) return { label: 'Kein Treffer', cls: 'bg-gray-100 text-gray-500' };
+		if (days <= 14) return { label: 'Aktiv', cls: 'bg-green-100 text-green-700' };
+		if (days <= 60) return { label: 'Veraltet', cls: 'bg-orange-100 text-orange-700' };
+		return { label: 'Inaktiv', cls: 'bg-red-100 text-red-700' };
+	}
+
+	function relativeDate(iso) {
+		if (!iso) return '–';
+		const days = daysAgo(iso);
+		if (days === 0) return 'Heute';
+		if (days === 1) return 'Gestern';
+		if (days < 7) return `vor ${days} Tagen`;
+		if (days < 30) return `vor ${Math.floor(days / 7)} Wo.`;
+		if (days < 365) return `vor ${Math.floor(days / 30)} Mon.`;
+		return `vor ${Math.floor(days / 365)} J.`;
+	}
+</script>
+
 <svelte:head>
 	<title>Über DigiKal – Impressum & Datenschutz</title>
 	<meta name="description" content="Informationen zu DigiKal: Datenquellen, Technik, Impressum und Datenschutzerklärung." />
@@ -20,26 +51,50 @@
 	<section class="mb-10">
 		<h2 class="text-xl font-semibold text-gray-800 mb-3">Veranstaltungskalender</h2>
 		<p class="text-gray-600 mb-4">
-			Python-Scraper lesen regelmäßig 13 Websites aus, eine KI kategorisiert die Events nach Thema, Format und Zielgruppe, und über eine Moderationsoberfläche (Directus) wird alles nochmal geprüft bevor es hier landet. Updates mehrmals täglich.
+			Python-Scraper und ICS-Feeds lesen täglich {data.sources.filter(s => !s.paused).length} Quellen aus. Eine KI kategorisiert die Events nach Thema, Format und Zielgruppe, und über eine Moderationsoberfläche (Directus) wird alles nochmal geprüft bevor es hier landet.
 		</p>
 
-		<div class="bg-gray-50 rounded-lg p-5">
-			<h3 class="text-sm font-semibold text-gray-700 mb-2">Quellen</h3>
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm text-gray-600">
-				<span>Stifter-helfen.de / Haus des Stiftens</span>
-				<span>Deutsche Stiftung für Engagement und Ehrenamt</span>
-				<span>Aktion Zivilcourage</span>
-				<span>Bitkom Akademie</span>
-				<span>Open Transfer</span>
-				<span>Skala Campus</span>
-				<span>Fraunhofer IAO</span>
-				<span>Stiftung Datenschutz</span>
-				<span>Wegweiser Bürgergesellschaft</span>
-				<span>Paritätischer Wohlfahrtsverband</span>
-				<span>Initiative D21</span>
-				<span>Deutscher Fundraising Verband</span>
-				<span>vediso</span>
-			</div>
+		<div class="rounded-lg border border-gray-200 overflow-hidden">
+			<table class="w-full text-sm">
+				<thead>
+					<tr class="bg-gray-50 border-b border-gray-200">
+						<th class="text-left px-4 py-2.5 font-semibold text-gray-700">Quelle</th>
+						<th class="text-left px-4 py-2.5 font-semibold text-gray-700 hidden sm:table-cell">Typ</th>
+						<th class="text-right px-4 py-2.5 font-semibold text-gray-700 hidden sm:table-cell">Events</th>
+						<th class="text-right px-4 py-2.5 font-semibold text-gray-700 hidden md:table-cell">Zuletzt</th>
+						<th class="text-right px-4 py-2.5 font-semibold text-gray-700">Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each data.sources as source, i}
+						{@const pill = statusPill(source)}
+						<tr class="border-b border-gray-100 last:border-0 {i % 2 === 0 ? '' : 'bg-gray-50/50'}">
+							<td class="px-4 py-2.5">
+								<a href={source.url} target="_blank" rel="noopener noreferrer"
+									class="text-gray-800 hover:text-primary-600 hover:underline font-medium">
+									{source.name}
+								</a>
+							</td>
+							<td class="px-4 py-2.5 hidden sm:table-cell">
+								<span class="text-xs px-1.5 py-0.5 rounded {source.type === 'ICS' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">
+									{source.type}
+								</span>
+							</td>
+							<td class="px-4 py-2.5 text-right text-gray-600 hidden sm:table-cell">
+								{source.count !== null ? source.count : '–'}
+							</td>
+							<td class="px-4 py-2.5 text-right text-gray-500 hidden md:table-cell">
+								{relativeDate(source.lastAdded)}
+							</td>
+							<td class="px-4 py-2.5 text-right">
+								<span class="text-xs px-2 py-0.5 rounded-full font-medium {pill.cls}">
+									{pill.label}
+								</span>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		</div>
 	</section>
 
@@ -97,7 +152,7 @@
 			<pre class="whitespace-pre">Veranstaltungen                    Förderprogramme
 ──────────────                    ───────────────
 
-13 Websites                      foerderdatenbank.de
+20 Quellen                       foerderdatenbank.de
      |                            foerderdatenbank.d-s-e-e.de
      v                                    |
 Python Scraper                            v
