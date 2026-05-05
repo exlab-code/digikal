@@ -75,10 +75,10 @@ def parse_german_date(text: str) -> str:
 
 
 def fetch_detail(url: str) -> str:
-    """Fetch detail page and extract description text.
+    """Fetch detail page and return all meaningful text.
 
-    vediso uses Odoo CMS; detail URLs redirect to /register variant.
-    Description lives in .o_wevent_event — filter out navigation noise.
+    Grabs everything from .o_wevent_event (title, date/time, description)
+    as plain text — the LLM extraction step handles structuring.
     """
     headers = {
         "User-Agent": "Mozilla/5.0 (compatible; digikal-scraper/1.0)",
@@ -89,23 +89,20 @@ def fetch_detail(url: str) -> str:
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 
-        for tag in soup.find_all(["script", "style", "nav"]):
+        for tag in soup.find_all(["script", "style", "nav", "footer"]):
             tag.decompose()
 
-        main = soup.select_one(".o_wevent_event")
+        main = soup.select_one(".o_wevent_event") or soup.find("main") or soup.find("body")
         if not main:
-            body = soup.find("body")
-            raw = body.get_text(separator="\n", strip=True) if body else ""
-        else:
-            raw = main.get_text(separator="\n", strip=True)
+            return ""
 
         lines = []
-        for line in raw.split("\n"):
+        for line in main.get_text(separator="\n", strip=True).split("\n"):
             line = line.strip()
-            if len(line) > 40 and line.lower() not in NOISE_LINES:
+            if line and line.lower() not in NOISE_LINES:
                 lines.append(line)
 
-        return "\n".join(lines[:20])
+        return "\n".join(lines)
     except Exception as e:
         logger.warning(f"Failed to fetch detail {url}: {e}")
         return ""
