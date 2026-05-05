@@ -20,7 +20,7 @@
 	<section class="mb-10">
 		<h2 class="text-xl font-semibold text-gray-800 mb-3">Veranstaltungskalender</h2>
 		<p class="text-gray-600 mb-4">
-			Python-Scraper lesen regelmäßig 12 Websites aus, eine KI kategorisiert die Events nach Thema, Format und Zielgruppe, und über eine Moderationsoberfläche (Directus) wird alles nochmal geprüft bevor es hier landet. Updates mehrmals täglich.
+			Python-Scraper lesen regelmäßig 13 Websites aus, eine KI kategorisiert die Events nach Thema, Format und Zielgruppe, und über eine Moderationsoberfläche (Directus) wird alles nochmal geprüft bevor es hier landet. Updates mehrmals täglich.
 		</p>
 
 		<div class="bg-gray-50 rounded-lg p-5">
@@ -38,6 +38,7 @@
 				<span>Paritätischer Wohlfahrtsverband</span>
 				<span>Initiative D21</span>
 				<span>Deutscher Fundraising Verband</span>
+				<span>vediso</span>
 			</div>
 		</div>
 	</section>
@@ -96,7 +97,7 @@
 			<pre class="whitespace-pre">Veranstaltungen                    Förderprogramme
 ──────────────                    ───────────────
 
-12 Websites                      foerderdatenbank.de
+13 Websites                      foerderdatenbank.de
      |                            foerderdatenbank.d-s-e-e.de
      v                                    |
 Python Scraper                            v
