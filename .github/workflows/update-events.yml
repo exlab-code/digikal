@@ -52,6 +52,7 @@ jobs:
           python events/scrapers/scrape_negz.py
           python events/scrapers/scrape_paritaetische.py
           python events/scrapers/scrape_hiig.py
+          python events/scrapers/scrape_vediso.py
 
       - name: Run ICS import
         if: ${{ github.event.inputs.mode != 'email_only' }}
