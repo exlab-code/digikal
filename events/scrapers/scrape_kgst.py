@@ -40,23 +40,47 @@ COLLECTION = "scraped_data"
 ITEMS_PER_PAGE = 20
 
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; digikal-scraper/1.0)",
+    "Accept-Language": "de-DE,de;q=0.9",
+}
+
+
 def fetch_page(page: int = 1) -> str:
     """Fetch a listing page from the KGSt Veranstaltungskalender.
 
-    Args:
-        page: Page number (1-indexed)
-
-    Returns:
-        HTML content as string
+    Liferay uses `start` as a 1-indexed page number, not an offset.
+    Page 1 omits `start` entirely; page 2+ passes `start=<page>`.
     """
-    params = {"delta": ITEMS_PER_PAGE, "start": (page - 1) * ITEMS_PER_PAGE}
-    headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; digikal-scraper/1.0)",
-        "Accept-Language": "de-DE,de;q=0.9",
-    }
-    response = requests.get(BASE_URL, params=params, headers=headers, timeout=30)
+    params: dict = {"delta": ITEMS_PER_PAGE}
+    if page > 1:
+        params["start"] = page
+    response = requests.get(BASE_URL, params=params, headers=HEADERS, timeout=30)
     response.raise_for_status()
     return response.text
+
+
+def fetch_detail(url: str) -> str:
+    """Fetch a KGSt event detail page and return all meaningful text.
+
+    The detail page at /veranstaltungsdaten?eventId=X contains pricing
+    (Seminargebühr), booking status, trainers, and full schedule.
+    The LLM extraction step handles structuring the raw text.
+    """
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=30)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        for tag in soup.find_all(["script", "style", "nav", "footer", "header"]):
+            tag.decompose()
+        main = soup.find("main") or soup.find(id="content") or soup.find("body")
+        if not main:
+            return ""
+        lines = [l.strip() for l in main.get_text(separator="\n").split("\n") if l.strip()]
+        return "\n".join(lines)
+    except Exception as e:
+        logger.warning(f"Failed to fetch detail {url}: {e}")
+        return ""
 
 
 def parse_date_location(raw: str) -> tuple[str, str, str, str]:
@@ -177,6 +201,10 @@ def scrape_all(max_pages: int = 5) -> list[dict]:
         for event in events:
             if event["url"] not in seen_urls:
                 seen_urls.add(event["url"])
+                logger.debug(f"Fetching detail: {event['title']}")
+                detail = fetch_detail(event["url"])
+                event["detail_text"] = detail
+                event["listing_text"] += "\n" + detail
                 all_events.append(event)
                 new += 1
 
