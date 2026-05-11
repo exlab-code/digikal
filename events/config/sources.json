@@ -33,20 +33,6 @@
       "full_page_selector": ".content-area"
     },
     {
-      "name": "Skala Campus",
-      "url": "https://www.skala-campus.org/termine/",
-      "type": "html",
-      "event_selector": ".teaser-wrapper.event",
-      "link_selector": "a",
-      "full_page_selector": ".main-content",
-      "pagination": {
-        "type": "url-param",
-        "param_name": "page",
-        "start_index": 1,
-        "max_pages": 10
-      }
-    },
-    {
       "name": "Fraunhofer IAO",
       "url": "https://www.iao.fraunhofer.de/de/veranstaltungen.html?q=&dtstart=01.01.2015&dtend=31.12.2030&cp=1&ipp=1000",
       "type": "html",

@@ -15,6 +15,12 @@
       "url": "https://pretix.eu/d3/events/ical/?locale=de-informal",
       "enabled": true,
       "fetch_details": true
+    },
+    {
+      "name": "Skala Campus",
+      "url": "https://tickets.skala-campus.org/events/ical/?locale=de-informal",
+      "enabled": true,
+      "fetch_details": true
     }
   ]
 }

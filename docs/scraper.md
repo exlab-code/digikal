@@ -95,8 +95,9 @@ run-scraper.bat --verbose --max-events 5
 
 The scraper uses the following configuration:
 
-1. `events/config/sources.json` - Contains the sources to scrape (created automatically with defaults if missing)
-2. Environment variables for Directus (set in `.env`):
+1. `events/config/sources.json` - HTML sources scraped by `event_scraper.py` (created automatically with defaults if missing)
+2. `events/config/ics_sources.json` - iCal/ICS feed sources imported by `ics_import.py` (set `fetch_details: true` to also scrape each event's linked page)
+3. Environment variables for Directus (set in `.env`):
 ```
 DIRECTUS_API_URL=https://your-directus-api-url
 DIRECTUS_API_TOKEN=your-api-token-here
@@ -116,8 +117,9 @@ The scraper is configured to collect events from the following sources (defined 
 | Smart Services BW | smart-service-bw.de | Digital transformation events |
 | Bitkom Akademie | bitkom-akademie.de | Tech seminars (paginated, up to 20 pages) |
 | Open Transfer | opentransfer.de | Community sector events |
-| Skala Campus | skala-campus.org | Non-profit capacity building (paginated, up to 10 pages) |
 | Fraunhofer IAO | iao.fraunhofer.de | Innovation and digitalization |
+
+> **Skala Campus** moved from the HTML scraper to the pretix iCal feed (`tickets.skala-campus.org/events/ical/`) — see *iCal Feed Sources* below.
 
 ### Added February 2026
 
@@ -129,14 +131,23 @@ The scraper is configured to collect events from the following sources (defined 
 | Initiative D21 | initiatived21.de/veranstaltungen | Digital society partnership, #D21talk series | `.grid__item` |
 | Deutscher Fundraising Verband | dfrv.de/veranstaltungen/ | Digital fundraising workshops, training, annual congress | `.events-table tbody tr` |
 
+### iCal Feed Sources
+
+Imported by `events/ics_import.py` from `events/config/ics_sources.json` (not the HTML scraper). Sources with `fetch_details: true` additionally fetch each event's linked page via the shared page scraper — pretix booking pages (`pretix.eu`, self-hosted instances like `tickets.skala-campus.org`) get their "switch to another date" sibling list stripped so the LLM extracts the right per-instance date.
+
+| Source | Feed | Notes |
+|--------|------|-------|
+| CorrelAid | correlaid.org/veranstaltungen/calendar.ics | Data community events |
+| Civic Data Community | community.civic-data.de (signed iCal token) | Community platform feed |
+| D3 — so geht digital | pretix.eu/d3/events/ical/ | pretix; `fetch_details` enriches from each instance page |
+| Skala Campus | tickets.skala-campus.org/events/ical/ | Self-hosted pretix; `fetch_details` enriches from each booking page (capacity-building courses, Lernpfade) |
+
 ### Investigated but Not Added (Require JavaScript Rendering)
 
-The following sources were researched but cannot be scraped with the current BeautifulSoup-based static HTML scraper. They would require adding Playwright or Selenium support:
+The following sources were researched but cannot be scraped with the current BeautifulSoup-based static HTML scraper. They would require adding Playwright or Selenium support. (D3 and CorrelAid were since added via their iCal feeds — see *iCal Feed Sources* above.)
 
 | Source | URL | Reason | Notes |
 |--------|-----|--------|-------|
-| D3 — so geht digital | so-geht-digital.de/events/ | WordPress + Elementor, JS-rendered | Events RSS feed exists at `/events/feed/` but is empty. Main RSS at `/feed/` contains blog posts only. No WP REST API for events. |
-| CorrelAid | correlaid.org/en/events | SvelteKit, client-side rendered | Event data is embedded as JSON inside a `<script>` tag in the page source. Could be extracted with a custom parser. |
 | betterplace academy | betterplace-academy.org | LearnWorlds platform, webinar-termine returns 404 | Alternative via Eventbrite organizer page (React-rendered). Eventbrite API could be used as alternative. |
 | Civic Coding | civic-coding.de/angebote/veranstaltungen | Government site returns empty response to curl | AI-for-common-good events (BMAS/BMFSFJ/BMUV initiative). May require specific headers or JS rendering. |
 

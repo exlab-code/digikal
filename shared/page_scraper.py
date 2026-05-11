@@ -19,33 +19,31 @@ REQUEST_HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; DigiKal/1.0; +https://www.digikal.org)"
 }
 
+# Heading text of pretix's "switch to another date" panel (German locale).
+_PRETIX_SIBLING_MARKER = "Zu anderem Termin wechseln"
 
-def _strip_pretix_sibling_list(text, url):
-    """Remove pretix's inline "switch to another date" sibling list.
 
-    On pretix instance pages (e.g. /d3/series/4909821/), pretix renders a
-    list of all sibling instances between the page's own title and its
-    actual details. Feeding that to the LLM causes it to pick the series
-    title or the first sibling's date for every instance in the series
-    (all 3 get collapsed into one duplicate).
+def _strip_pretix_sibling_widget(soup):
+    """Drop pretix's "switch to another date" panel from the DOM.
 
-    The sibling list starts with "Zu anderem Termin wechseln" and ends at
-    the last standalone "Tickets" line before the current instance's
-    "Beginn:" section. We keep the outer frame and drop what's in between.
+    On a pretix series instance page (hosted pretix.eu or a self-hosted
+    instance like tickets.skala-campus.org) pretix renders a collapsible
+    panel — a list or a calendar of every sibling instance — before the
+    current instance's own details:
+
+        <details class="panel panel-default">
+          <summary class="panel-heading">… Zu anderem Termin wechseln …</summary>
+          <div><div class="panel-body"> … all siblings … </div></div>
+        </details>
+
+    Left in, the downstream LLM picks a sibling's date (or the series
+    title) for every instance, collapsing the whole series into one
+    duplicate. Removing the panel keeps each page instance-specific.
     """
-    if "pretix.eu" not in url:
-        return text
-    start_marker = "Zu anderem Termin wechseln"
-    start_idx = text.find(start_marker)
-    if start_idx == -1:
-        return text
-    beginn_idx = text.find("Beginn:", start_idx)
-    if beginn_idx == -1:
-        return text
-    tickets_idx = text.rfind("Tickets", start_idx, beginn_idx)
-    if tickets_idx == -1:
-        return text
-    return text[:start_idx] + text[tickets_idx + len("Tickets"):]
+    for node in soup.find_all(string=lambda s: s and _PRETIX_SIBLING_MARKER in s):
+        panel = node.find_parent(["details", "div"], class_="panel")
+        if panel:
+            panel.decompose()
 
 
 def scrape_url(url):
@@ -59,6 +57,8 @@ def scrape_url(url):
         for tag in soup(["script", "style", "nav", "footer", "header"]):
             tag.decompose()
 
+        _strip_pretix_sibling_widget(soup)
+
         # Try common content selectors first
         content = None
         for selector in ["main", "article", '[role="main"]', ".content", ".entry-content"]:
@@ -69,8 +69,6 @@ def scrape_url(url):
 
         if not content:
             content = soup.get_text(separator="\n", strip=True)
-
-        content = _strip_pretix_sibling_list(content, url)
 
         if len(content) > 10000:
             content = content[:10000] + "..."
