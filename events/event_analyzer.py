@@ -458,9 +458,12 @@ LOCATION:
 - Bei Präsenz-Events NUR den Stadtnamen (z.B. "Berlin", "Frankfurt am Main"), KEINE Adresse/Straße/Gebäude
 
 DATUM/ZEIT:
+- HEUTE ist {today}. Aktuelles Jahr ist {current_year}.
 - Format: YYYY-MM-DD / HH:MM. Europäisch: DD.MM.YYYY
 - "Beginn"/"Start" vor "Einlass"/"Türöffnung" priorisieren
-- Fehlendes Jahr → aktuelles Jahr wenn Datum in Zukunft
+- Wenn das Event-Datum KEIN Jahr enthält (z.B. nur "9. Juni" oder "Dienstag, 9. Juni") → {current_year} verwenden
+- Wenn der Text explizit ein Jahr für DIESES Event nennt (z.B. "9. Juni 2024") → genau dieses Jahr verwenden, auch wenn es in der Vergangenheit liegt
+- Jahreszahlen, die sich auf Gesetze, Fristen oder Hintergrund-Themen beziehen (z.B. "Ab dem 2. August 2026 gilt..."), sind NICHT das Event-Datum
 - Vage Zeiten: Vormittag→10:00, Mittag→12:00, Nachmittag→14:00, Abend→19:00, Ganztägig→09:00-17:00
 
 RELEVANCY_SCORE (0-100) — DIGITALISIERUNGS-Kalender für NPOs:
@@ -491,7 +494,12 @@ Nutze null für unbekannte Felder."""
 
         raw_content = json.dumps(content_copy, indent=2, ensure_ascii=False, default=str)
 
-        return self._prompt_template.format(raw_content=raw_content)
+        today = date.today()
+        return self._prompt_template.format(
+            raw_content=raw_content,
+            today=today.isoformat(),
+            current_year=today.year,
+        )
 
 def process_events(limit=10, batch_size=3):
     """Main processing function for event extraction and analysis"""
