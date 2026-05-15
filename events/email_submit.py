@@ -57,15 +57,11 @@ IGNORE_DOMAINS = {
     'w3.org', 'facebook.com/tr', 'doubleclick.net',
 }
 
-# Trusted sender domains → hardcoded organizer name.
-# Needed when the submitted URL is a booking/platform page (e.g. pretix.eu)
-# where the scraped content carries the platform's branding rather than the
-# real organizer, causing the downstream LLM to guess "pretix" etc.
-# Events from these senders also get auto-approved.
-TRUSTED_ORGANIZERS = {
-    'buergermut.de': 'Stiftung Bürgermut',
+# Trusted sender domains → submissions from these senders get auto-approved.
+# The LLM still infers the organizer from the scraped page content.
+TRUSTED_SENDERS = {
+    'buergermut.de',
 }
-TRUSTED_SENDERS = set(TRUSTED_ORGANIZERS.keys())
 
 
 def decode_mime_header(raw):
@@ -197,18 +193,7 @@ def is_trusted_sender(from_header):
     return any(domain == d or domain.endswith('.' + d) for d in TRUSTED_SENDERS)
 
 
-def trusted_organizer(from_header):
-    """Return the hardcoded organizer name for a trusted sender, or None."""
-    domain = _sender_domain(from_header)
-    if not domain:
-        return None
-    for trusted_domain, organizer in TRUSTED_ORGANIZERS.items():
-        if domain == trusted_domain or domain.endswith('.' + trusted_domain):
-            return organizer
-    return None
-
-
-def create_scraped_entry(url, raw_content, source_name, trusted=False, organizer_override=None):
+def create_scraped_entry(url, raw_content, source_name, trusted=False):
     """Create a scraped_data entry in Directus with scraped page content."""
     content_hash = hashlib.md5(raw_content.encode()).hexdigest()
 
@@ -230,9 +215,6 @@ def create_scraped_entry(url, raw_content, source_name, trusted=False, organizer
         'detail_text': raw_content,
         'submitted_via': 'email',
     }
-    if organizer_override:
-        # Picked up in event_analyzer.py to overwrite the LLM-inferred organizer.
-        payload['organizer_override'] = organizer_override
 
     data = {
         'url': url,
@@ -296,22 +278,12 @@ def process_inbox(dry_run=False):
         sender = msg.get('From', '')
         source_name = sender_to_source(sender)
         trusted = is_trusted_sender(sender)
-        organizer_override = trusted_organizer(sender)
         body = get_email_body(msg)
         is_forwarded, inner_body = detect_forwarded(subject, body)
         urls = extract_urls(inner_body)
 
-        # Forwarded trusted submissions keep auto-approval, but drop the
-        # organizer override — the trusted sender is the courier, not the
-        # actual organizer. Let the downstream LLM infer the organizer from
-        # the scraped page.
-        if is_forwarded:
-            organizer_override = None
-
         if trusted and is_forwarded:
             trust_tag = ' [TRUSTED, FORWARDED]'
-        elif trusted and organizer_override:
-            trust_tag = f' [TRUSTED → {organizer_override}]'
         elif trusted:
             trust_tag = ' [TRUSTED]'
         elif is_forwarded:
@@ -331,7 +303,7 @@ def process_inbox(dry_run=False):
                         continue
                     item_id = create_scraped_entry(
                         url, raw_content, source_name,
-                        trusted=trusted, organizer_override=organizer_override,
+                        trusted=trusted,
                     )
                     if item_id:
                         logger.info(f'  Created scraped_data #{item_id} for: {url}')
