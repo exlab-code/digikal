@@ -2,6 +2,7 @@
   import { getCategoryName } from '$lib/categoryMappings';
   import Tag from './Tag.svelte';
   import { filters, updateFilters } from '$lib/stores/eventStore';
+  import { eventPath } from '$lib/eventHelpers.js';
 
   export let event;
 
@@ -17,7 +18,7 @@
 
   $: startTime = extractTime(event.start_date);
   $: endTime = extractTime(event.end_date);
-  $: link = event.website || event.register_link;
+  $: link = eventPath(event);
 
   // Find the group ID for a tag
   function findTagGroup(tag) {
@@ -39,11 +40,10 @@
   }
 
   function trackClick() {
-    if (link && typeof umami !== 'undefined') {
-      umami.track('event-click', {
+    if (typeof umami !== 'undefined') {
+      umami.track('event-card-click', {
         title: event.title,
-        source: event.source || event.organizer,
-        url: link,
+        source: event.source || event.organizer
       });
     }
   }
@@ -51,7 +51,7 @@
 </script>
 
 <article class="max-w-3xl">
-<svelte:element this={link ? 'a' : 'div'} href={link || undefined} target={link ? '_blank' : undefined} rel={link ? 'noopener noreferrer' : undefined} on:click={trackClick} class="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg hover:border-primary-300 transition-all group/card no-underline">
+<a href={link} on:click={trackClick} class="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg hover:border-primary-300 transition-all group/card no-underline">
   <div class="flex items-start gap-4">
     <!-- Date badge -->
     <time datetime={event.start_date} class="bg-primary-50 text-primary-700 px-3 py-2 rounded-lg text-center min-w-[3.5rem] flex-shrink-0 block">
@@ -113,5 +113,5 @@
       {/if}
     </div>
   </div>
-</svelte:element>
+</a>
 </article>

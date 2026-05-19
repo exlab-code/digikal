@@ -273,14 +273,9 @@
 
 <svelte:head>
 	<title>LinkedIn-Post Generator – DigiKal</title>
-	<meta name="description" content="Generiere wöchentliche LinkedIn-Posts mit Veranstaltungen für gemeinnützige Organisationen." />
+	<meta name="description" content="Internes Tool zur Generierung wöchentlicher LinkedIn-Posts." />
+	<meta name="robots" content="noindex, follow" />
 	<link rel="canonical" href="https://www.digikal.org/linkedin-generator" />
-	<meta property="og:type" content="website" />
-	<meta property="og:title" content="LinkedIn-Post Generator – DigiKal" />
-	<meta property="og:description" content="Generiere wöchentliche LinkedIn-Posts mit Veranstaltungen für gemeinnützige Organisationen." />
-	<meta property="og:url" content="https://www.digikal.org/linkedin-generator" />
-	<meta property="og:locale" content="de_DE" />
-	<meta property="og:site_name" content="DigiKal" />
 </svelte:head>
 
 <div class="max-w-4xl mx-auto my-12 p-10 bg-white rounded-xl shadow-lg">
