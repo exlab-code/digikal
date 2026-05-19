@@ -50,16 +50,17 @@
 
 </script>
 
-<svelte:element this={link ? 'a' : 'div'} href={link || undefined} target={link ? '_blank' : undefined} rel={link ? 'noopener noreferrer' : undefined} on:click={trackClick} class="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg hover:border-primary-300 transition-all group/card no-underline max-w-3xl">
+<article class="max-w-3xl">
+<svelte:element this={link ? 'a' : 'div'} href={link || undefined} target={link ? '_blank' : undefined} rel={link ? 'noopener noreferrer' : undefined} on:click={trackClick} class="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg hover:border-primary-300 transition-all group/card no-underline">
   <div class="flex items-start gap-4">
     <!-- Date badge -->
-    <div class="bg-primary-50 text-primary-700 px-3 py-2 rounded-lg text-center min-w-[3.5rem] flex-shrink-0">
-      <div class="text-xl font-bold leading-tight">{new Date(event.start_date).getDate()}</div>
-      <div class="text-xs font-medium">{new Date(event.start_date).toLocaleString('de-DE', { month: 'short' })}</div>
+    <time datetime={event.start_date} class="bg-primary-50 text-primary-700 px-3 py-2 rounded-lg text-center min-w-[3.5rem] flex-shrink-0 block">
+      <span class="block text-xl font-bold leading-tight">{new Date(event.start_date).getDate()}</span>
+      <span class="block text-xs font-medium">{new Date(event.start_date).toLocaleString('de-DE', { month: 'short' })}</span>
       {#if event.end_date && new Date(event.start_date).toDateString() !== new Date(event.end_date).toDateString()}
-        <div class="text-[0.65rem] mt-1 text-primary-500">+ {Math.ceil((new Date(event.end_date) - new Date(event.start_date)) / (1000 * 60 * 60 * 24))} Tage</div>
+        <span class="block text-[0.65rem] mt-1 text-primary-500">+ {Math.ceil((new Date(event.end_date) - new Date(event.start_date)) / (1000 * 60 * 60 * 24))} Tage</span>
       {/if}
-    </div>
+    </time>
 
     <!-- Content -->
     <div class="flex-grow min-w-0">
@@ -71,7 +72,7 @@
       <!-- Metadata -->
       <div class="flex flex-wrap gap-x-3 gap-y-1 text-sm text-gray-500 mb-2">
         {#if startTime}
-          <span>{startTime} {#if endTime}– {endTime} {/if}Uhr</span>
+          <time datetime={event.start_date}>{startTime} {#if endTime}– {endTime} {/if}Uhr</time>
         {/if}
         {#if event.location}
           <span>{event.location}</span>
@@ -113,3 +114,4 @@
     </div>
   </div>
 </svelte:element>
+</article>

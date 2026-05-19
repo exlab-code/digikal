@@ -115,10 +115,10 @@
 	<meta name="description" content={topicConfig.description} />
 	<meta property="og:title" content={topicConfig.metaTitle} />
 	<meta property="og:description" content={topicConfig.description} />
-	<meta property="og:url" content="https://digikal.org/themen/{topic}" />
+	<meta property="og:url" content="https://www.digikal.org/themen/{topic}" />
 	<meta property="og:locale" content="de_DE" />
 	<meta property="og:site_name" content="DigiKal" />
-	<link rel="canonical" href="https://digikal.org/themen/{topic}" />
+	<link rel="canonical" href="https://www.digikal.org/themen/{topic}" />
 
 	{@html `<script type="application/ld+json">${JSON.stringify({
 		"@context": "https://schema.org",
@@ -139,7 +139,7 @@
 					? "https://schema.org/OnlineEventAttendanceMode"
 					: "https://schema.org/OfflineEventAttendanceMode",
 				"location": (!event.location || event.location === 'Online')
-					? { "@type": "VirtualLocation", "url": event.website || event.register_link || "https://digikal.org" }
+					? { "@type": "VirtualLocation", "url": event.website || event.register_link || "https://www.digikal.org" }
 					: { "@type": "Place", "name": event.location },
 				"organizer": { "@type": "Organization", "name": event.organizer || "" },
 				"offers": {

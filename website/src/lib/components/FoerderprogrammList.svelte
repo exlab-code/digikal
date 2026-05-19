@@ -125,11 +125,13 @@
       {/if}
     </div>
 
-    <div class="space-y-6">
+    <ul role="list" class="space-y-6 list-none p-0 m-0">
       {#each visiblePrograms as program (program.id)}
-        <FoerderprogrammCard {program} />
+        <li>
+          <FoerderprogrammCard {program} />
+        </li>
       {/each}
-    </div>
+    </ul>
 
     {#if hasMore}
       <div bind:this={sentinel} class="flex justify-center py-8">

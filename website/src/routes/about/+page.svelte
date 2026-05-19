@@ -32,7 +32,76 @@
 <svelte:head>
 	<title>Über DigiKal – Impressum & Datenschutz</title>
 	<meta name="description" content="Informationen zu DigiKal: Datenquellen, Technik, Impressum und Datenschutzerklärung." />
-	<link rel="canonical" href="https://digikal.org/about" />
+	<link rel="canonical" href="https://www.digikal.org/about" />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Über DigiKal – Impressum & Datenschutz" />
+	<meta property="og:description" content="Informationen zu DigiKal: Datenquellen, Technik, Impressum und Datenschutzerklärung." />
+	<meta property="og:url" content="https://www.digikal.org/about" />
+	<meta property="og:locale" content="de_DE" />
+	<meta property="og:site_name" content="DigiKal" />
+
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "AboutPage",
+		"name": "Über DigiKal",
+		"url": "https://www.digikal.org/about",
+		"inLanguage": "de",
+		"isPartOf": { "@type": "WebSite", "name": "DigiKal", "url": "https://www.digikal.org/" },
+		"about": {
+			"@type": "Organization",
+			"name": "DigiKal",
+			"url": "https://www.digikal.org/",
+			"publisher": { "@type": "Organization", "name": "ex:lab", "url": "https://ex-lab.de" }
+		}
+	})}</script>`}
+
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "FAQPage",
+		"mainEntity": [
+			{
+				"@type": "Question",
+				"name": "Was ist DigiKal?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "DigiKal sammelt automatisch Digitalisierungsveranstaltungen und Förderprogramme für gemeinnützige Organisationen in Deutschland. Alles Open Source, alles aus öffentlich zugänglichen Quellen. Ein Projekt von Julius Falk / ex:lab."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Woher kommen die Veranstaltungsdaten?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Veranstaltungen werden über Scraper und iCal-Feeds aus öffentlich zugänglichen Quellen von Stiftungen, Akademien, Hochschulen und Bildungsträgern für den Nonprofit-Sektor zusammengeführt."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Woher kommt die Förderdatenbank?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Die über 3.000 Förderprogramme stammen aus öffentlichen Förderdatenbanken von Bund, Ländern und der EU und werden regelmäßig aktualisiert."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Ist DigiKal kostenlos?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Ja. DigiKal ist vollständig kostenfrei und Open Source. Der Quellcode liegt auf GitHub unter github.com/exlab-code/digikal."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Wer steht hinter DigiKal?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "DigiKal wird von Julius Falk / ex:lab betrieben. Die Stiftung Bürgermut unterstützt das Projekt über das Magazin D3 – so geht digital finanziell."
+				}
+			}
+		]
+	})}</script>`}
 </svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

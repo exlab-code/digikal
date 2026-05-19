@@ -4,8 +4,18 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link rel="icon" type="image/png" href="%sveltekit.assets%/favicon.png" />
-	<link rel="alternate" hreflang="de" href="https://digikal.org/" />
+	<link rel="alternate" hreflang="de" href="https://www.digikal.org/" />
 	<meta name="geo.region" content="DE" />
+
+	<!-- Default social preview (per-route og:title/og:url override this) -->
+	<meta property="og:image" content="https://www.digikal.org/og-image.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:type" content="image/png" />
+	<meta property="og:image:alt" content="DigiKal — Veranstaltungen und Förderprogramme für gemeinnützige Organisationen" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content="https://www.digikal.org/og-image.png" />
+	<meta name="twitter:image:alt" content="DigiKal — Veranstaltungen und Förderprogramme für gemeinnützige Organisationen" />
 
 	<!-- Self-hosted Inter font -->
 	<style>
@@ -14,6 +24,27 @@
 		@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('%sveltekit.assets%/fonts/inter-latin-600-normal.woff2') format('woff2'); }
 		@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('%sveltekit.assets%/fonts/inter-latin-700-normal.woff2') format('woff2'); }
 	</style>
+
+	<!-- Site-wide Organization schema (entity grounding) -->
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "Organization",
+		"name": "DigiKal",
+		"url": "https://www.digikal.org/",
+		"logo": "https://www.digikal.org/favicon.png",
+		"description": "Veranstaltungskalender und Förderdatenbank für gemeinnützige Organisationen in Deutschland.",
+		"inLanguage": "de",
+		"publisher": {
+			"@type": "Organization",
+			"name": "ex:lab",
+			"url": "https://ex-lab.de"
+		},
+		"sameAs": [
+			"https://github.com/exlab-code/digikal"
+		]
+	}
+	</script>
 
 	<!-- Umami Analytics -->
 	<script defer src="https://umami.buerofalk.de/script.js" data-website-id="cdc4de63-c907-4782-b2e7-a2b13e589319"></script>

@@ -32,22 +32,22 @@
 
 <svelte:head>
 	<title>DigiKal – Digitalisierungsveranstaltungen für Nonprofits</title>
-	<meta name="description" content="Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland. Finde Webinare, Workshops und Förderungen zu Digitalisierung, Fundraising und mehr." />
+	<meta name="description" content="Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland. Webinare, Workshops und Förderungen zu Digitalisierung." />
 
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content="DigiKal – Digitalisierungsveranstaltungen für Nonprofits" />
 	<meta property="og:description" content="Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland." />
-	<meta property="og:url" content="https://digikal.org/" />
+	<meta property="og:url" content="https://www.digikal.org/" />
 	<meta property="og:locale" content="de_DE" />
 	<meta property="og:site_name" content="DigiKal" />
 
-	<link rel="canonical" href="https://digikal.org/" />
+	<link rel="canonical" href="https://www.digikal.org/" />
 
 	{@html `<script type="application/ld+json">${JSON.stringify({
 		"@context": "https://schema.org",
 		"@type": "WebSite",
 		"name": "DigiKal",
-		"url": "https://digikal.org/",
+		"url": "https://www.digikal.org/",
 		"description": "Veranstaltungskalender und Förderprogramme für gemeinnützige Organisationen in Deutschland.",
 		"inLanguage": "de",
 		"publisher": {
@@ -75,7 +75,7 @@
 					? "https://schema.org/OnlineEventAttendanceMode"
 					: "https://schema.org/OfflineEventAttendanceMode",
 				"location": (!event.location || event.location === 'Online')
-					? { "@type": "VirtualLocation", "url": event.website || event.register_link || "https://digikal.org" }
+					? { "@type": "VirtualLocation", "url": event.website || event.register_link || "https://www.digikal.org" }
 					: { "@type": "Place", "name": event.location },
 				"organizer": { "@type": "Organization", "name": event.organizer || "" },
 				"offers": {
@@ -91,13 +91,17 @@
 </svelte:head>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+	<h1 class="sr-only">DigiKal — Veranstaltungen und Förderprogramme für Nonprofits</h1>
+
 	<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-		<aside class="lg:col-span-1 space-y-6">
+		<aside class="lg:col-span-1 space-y-6" aria-labelledby="aside-heading">
+			<h2 id="aside-heading" class="sr-only">Newsletter und Filter</h2>
 			<NewsletterSignup />
 			<EventFilter defaultOpen={true} />
 		</aside>
 
-		<div class="lg:col-span-3">
+		<div class="lg:col-span-3" aria-labelledby="events-heading">
+			<h2 id="events-heading" class="sr-only">Aktuelle Veranstaltungen</h2>
 			<EventList />
 		</div>
 	</div>

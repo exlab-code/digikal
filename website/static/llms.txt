@@ -1,0 +1,28 @@
+# DigiKal
+
+> Veranstaltungskalender und Förderdatenbank für gemeinnützige Organisationen in Deutschland. Über 360 Webinare, Workshops und Konferenzen zu Digitalisierung, KI, Datenschutz und IT-Sicherheit sowie über 3.000 Förderprogramme. Open Source, automatisch aktualisiert, alle Daten aus öffentlich zugänglichen Quellen. Ein Projekt von ex:lab.
+
+## Hauptbereiche
+
+- [Veranstaltungen](https://www.digikal.org/): Aktuelle Webinare, Workshops und Konferenzen für Nonprofits.
+- [Förderprogramme](https://www.digikal.org/foerderprogramme): Über 3.000 Förderungen filterbar nach Thema, Region und Fördersumme.
+- [Über DigiKal](https://www.digikal.org/about): Datenquellen, Technik, Impressum und Datenschutz.
+- [LinkedIn-Post Generator](https://www.digikal.org/linkedin-generator): Generiert wöchentliche LinkedIn-Posts mit der nächsten Veranstaltungswoche.
+
+## Themen
+
+- [Künstliche Intelligenz (KI)](https://www.digikal.org/themen/ki): Veranstaltungen und Förderprogramme rund um KI im gemeinnützigen Sektor.
+- [Digitale Transformation](https://www.digikal.org/themen/digitale-transformation): Strategie, Prozesse und Change-Themen für Nonprofits.
+- [Datenschutz](https://www.digikal.org/themen/datenschutz): DSGVO-konformer Umgang mit Daten in gemeinnützigen Organisationen.
+- [IT-Sicherheit](https://www.digikal.org/themen/it-sicherheit): Cybersicherheit, Informationssicherheit und NIS2 für den dritten Sektor.
+- [Social Media](https://www.digikal.org/themen/social-media): Digitale Kommunikation, Öffentlichkeitsarbeit und Plattform-Strategie.
+
+## Datenfeeds
+
+- [Kalender-Abo (.ics)](https://www.digikal.org/calendar.ics): Subscribe-Feed für alle kommenden Veranstaltungen.
+- [Sitemap](https://www.digikal.org/sitemap.xml): XML-Sitemap aller indexierbaren Seiten.
+
+## Kontakt & Quellcode
+
+- Betreiber: ex:lab (Julius Falk) — https://ex-lab.de
+- Open Source: https://github.com/exlab-code/digikal

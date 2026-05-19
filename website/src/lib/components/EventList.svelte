@@ -58,10 +58,12 @@
       <p class="text-gray-500 text-sm">{$filteredEvents.length} Veranstaltungen</p>
     </div>
 
-    <div class="space-y-6">
+    <ul role="list" class="space-y-6 list-none p-0 m-0">
       {#each $filteredEvents as event (event.id)}
-        <EventCard {event} />
+        <li>
+          <EventCard {event} />
+        </li>
       {/each}
-    </div>
+    </ul>
   {/if}
 </div>

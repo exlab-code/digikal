@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://digikal.org/sitemap.xml
+Sitemap: https://www.digikal.org/sitemap.xml

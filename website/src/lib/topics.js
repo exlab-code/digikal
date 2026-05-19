@@ -8,7 +8,7 @@
 export const TOPICS = {
 	ki: {
 		title: 'KI für Nonprofits',
-		metaTitle: 'KI & Künstliche Intelligenz für gemeinnützige Organisationen – DigiKal',
+		metaTitle: 'KI für gemeinnützige Organisationen – DigiKal',
 		description:
 			'Veranstaltungen und Förderprogramme zu Künstlicher Intelligenz für gemeinnützige Organisationen in Deutschland.',
 		eventTags: ['KI'],

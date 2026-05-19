@@ -163,7 +163,7 @@
   }
 </script>
 
-<div class="bg-white rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 h-full overflow-hidden event-card">
+<article class="bg-white rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 h-full overflow-hidden event-card">
   <div class="flex h-full">
     <!-- Color-coded deadline indicator on the left side -->
     <div class="w-4 flex-shrink-0" style="background-color: {getDeadlineColor()};"></div>
@@ -261,4 +261,4 @@
       {/if}
     </div>
   </div>
-</div>
+</article>
