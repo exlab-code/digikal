@@ -2,7 +2,7 @@
   "sources": [
     {
       "name": "CorrelAid",
-      "url": "https://correlaid.org/veranstaltungen/calendar.ics",
+      "url": "http://correlaid.org/correlaid-events.ics",
       "enabled": true
     },
     {
